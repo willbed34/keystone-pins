@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#f6f3ec">
 <meta name="description" content="A daily Pennsylvania town-guessing game. Place five towns on an unlabeled aerial map and see how well you know PA.">
 <link rel="canonical" href="https://pinnsylvania.win/">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M12 5h40l8 54H4L12 5Z' fill='%23173b70' stroke='%23d6a329' stroke-width='3'/%3E%3Ctext x='32' y='39' text-anchor='middle' font-family='Arial,sans-serif' font-size='19' font-weight='800' fill='%23f2c75c'%3EPA%3C/text%3E%3C/svg%3E">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Pinnsylvania — Daily PA Town Game">
 <meta property="og:description" content="How well do you actually know PA? Place five towns on an unlabeled aerial map.">
@@ -21,11 +22,12 @@
 body{background:var(--bg);color:var(--ink);font-family:Georgia,'Times New Roman',serif;min-height:100%}
 .top-rule{height:6px;background:linear-gradient(90deg,#173b70 0 47%,#d6a329 47% 53%,#173b70 53% 100%)}
 main{max-width:760px;margin:0 auto;padding:14px}
-.brand{display:flex;align-items:center;gap:12px;margin:5px 0 16px}
-.keystone-mark{width:48px;height:48px;display:grid;place-items:center;flex:none;clip-path:polygon(12% 0,88% 0,100% 100%,0 100%);background:var(--navy);color:#f2c75c;font:800 .95rem system-ui,sans-serif;letter-spacing:1px;padding-top:3px}
-.eyebrow{font:700 .68rem system-ui,sans-serif;letter-spacing:1.5px;color:var(--gold);margin:0 0 2px}
-h1{font-size:1.65rem;margin:0;color:var(--navy);letter-spacing:.2px}
-.sub{color:var(--mute);font-style:italic;margin:2px 0 0}
+.brand{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;margin:14px 0 22px}
+.keystone-mark{width:62px;height:62px;display:grid;place-items:center;flex:none;filter:drop-shadow(0 3px 3px #0002)}
+.keystone-mark svg{display:block;width:100%;height:100%}
+.eyebrow{font:700 .7rem system-ui,sans-serif;letter-spacing:2px;color:var(--gold);margin:0 0 4px}
+h1{font-size:clamp(2rem,5vw,2.45rem);margin:0;color:var(--navy);letter-spacing:.2px;line-height:1.08}
+.sub{color:var(--mute);font-style:italic;margin:5px 0 0;font-size:1.08rem}
 .card{background:var(--card);border:1px solid #173b7020;border-top:3px solid var(--gold);border-radius:14px;padding:14px;box-shadow:0 2px 8px #172b4d0d;margin-bottom:12px}
 button{font:inherit;font-weight:700;border:1px solid #102d57;border-radius:10px;padding:12px 18px;background:var(--navy);color:#fff;cursor:pointer;width:100%;font-size:1rem;transition:filter .15s,transform .15s}
 button:not(:disabled):hover{filter:brightness(1.12)}
@@ -43,14 +45,14 @@ button:disabled{opacity:.4;cursor:default}
 .big{font-size:2.6rem;font-weight:700;text-align:center;color:var(--gold);margin:0}
 .ff{font-size:.92rem;color:var(--mute);margin:2px 0 8px;line-height:1.35}
 .hide{display:none}
-@media(max-width:480px){main{padding:10px}.brand{margin-bottom:13px}#map{height:58vh;min-height:340px}.card{padding:12px}}
+@media(max-width:480px){main{padding:10px}.brand{margin:10px 0 17px}#map{height:58vh;min-height:340px}.card{padding:12px}}
 </style>
 </head>
 <body>
 <div class="top-rule" aria-hidden="true"></div>
 <main>
 <header class="brand">
-  <div class="keystone-mark" aria-hidden="true">PA</div>
+  <div class="keystone-mark" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M12 4H52L61 60H3L12 4Z" fill="var(--navy)" stroke="var(--gold)" stroke-width="2.5" stroke-linejoin="round"/><path d="M17 9H47L54 55H10L17 9Z" fill="none" stroke="#ffffff" stroke-opacity=".24" stroke-width="1.2"/><text x="32" y="39" text-anchor="middle" fill="#f2c75c" font-family="system-ui,sans-serif" font-size="19" font-weight="850" letter-spacing="1">PA</text></svg></div>
   <div>
     <p class="eyebrow">THE KEYSTONE STATE · DAILY TOWN CHALLENGE</p>
     <h1>Pinnsylvania</h1>
