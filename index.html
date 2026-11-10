@@ -83,7 +83,7 @@ button:disabled{opacity:.4;cursor:default}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script>
 // Puzzle pool: facts must be human-reviewed before launch. Round order: easy → hard.
-const PZ=[
+let PZ=[
 [{n:"Philadelphia",lat:39.9526,lon:-75.1652,f:"🔔 William Penn founded it in 1682, and it served as the U.S. capital from 1790 to 1800."},
 {n:"Hershey",lat:40.2859,lon:-76.6502,f:"🍫 Milton Hershey built the town for his chocolate factory workers; even the streetlamps are shaped like Kisses."},
 {n:"Punxsutawney",lat:40.9434,lon:-78.9697,f:"🦫 Its famous groundhog, Phil, has predicted the weather every Groundhog Day since 1887."},
@@ -103,10 +103,11 @@ const MULT=[1,1,2,3,3],BAND=d=>d<10?"🎯":d<40?"🔥":d<120?"😬":"💀";
 const $=id=>document.getElementById(id);
 const ny=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York"}).format(new Date());
 const num=Math.round((Date.UTC(...ny.split("-").map((v,i)=>i===1?v-1:+v))-Date.UTC(2026,10,10))/864e5)+1;
-// Pick one town from each difficulty tier using the day number as a seed.
-// This means every player gets the same daily puzzle, without a database or cron job.
-// Each of the five round tiers draws from the corresponding town position in every pool row.
-const DAILY_TIERS=Array.from({length:5},(_,roundIndex)=>PZ.map(day=>day[roundIndex]));
+// Retain hand-researched local trivia for towns already in the original pool.
+const KNOWN_FACTS=Object.fromEntries(PZ.flat().filter(t=>t.f).map(t=>[t.n,t.f]));
+// Load the complete 2024 Census Pennsylvania places file (2,002 incorporated places
+// and census-designated places), not just InstaMaps' 600-place display subset.
+const CENSUS_PLACES_URL="https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2024_Gazetteer/2024_gaz_place_42.txt";
 function puzzleForDay(dayNumber){
   let seed=(Math.imul(dayNumber,0x9e3779b1)^0x85ebca6b)>>>0;
   if(seed===0)seed=1;
@@ -114,12 +115,47 @@ function puzzleForDay(dayNumber){
     seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;
     return (seed>>>0)/4294967296;
   };
-  return DAILY_TIERS.map(tier=>tier[Math.floor(random()*tier.length)]);
+  // Larger Census places are generally easier to recognize; small places make
+  // progressively harder rounds. The seed keeps the daily set deterministic.
+  const sorted=PZ.flat().slice().sort((a,b)=>b.area-a.area);
+  const tiers=Array.from({length:5},(_,i)=>{
+    const start=Math.floor(i*sorted.length/5),end=Math.floor((i+1)*sorted.length/5);
+    return sorted.slice(start,end);
+  });
+  return tiers.map(tier=>tier[Math.floor(random()*tier.length)]);
 }
+const censusReady=(async()=>{
+  try{
+    const response=await fetch(CENSUS_PLACES_URL,{cache:"force-cache"});
+    if(!response.ok)throw new Error("Census Gazetteer returned "+response.status);
+    const lines=(await response.text()).trim().split(/\r?\n/);
+    const records=lines.slice(1).map(line=>line.split("\t")).filter(row=>row.length>=12&&row[0]==="PA");
+    if(records.length<1900)throw new Error("Incomplete Pennsylvania Gazetteer: "+records.length+" records");
+    const parsed=records.map(row=>{
+      const rawName=row[3]||"";
+      const match=rawName.match(/^(.*)\\s+(city|borough|CDP|town|municipality)$/i);
+      const name=(match?match[1]:rawName).trim();
+      const type=match?match[2].toLowerCase():"place";
+      const lat=Number(row[10]),lon=Number(row[11]),area=Number(row[8]),water=Number(row[9]);
+      return {n:name,type,lat,lon,area:Number.isFinite(area)?area:0,water:Number.isFinite(water)?water:0};
+    }).filter(t=>t.n&&Number.isFinite(t.lat)&&Number.isFinite(t.lon)&&t.lat>39&&t.lat<43&&t.lon<-74&&t.lon>-81);
+    const counts={};parsed.forEach(t=>counts[t.n]=(counts[t.n]||0)+1);
+    PZ=parsed.map(t=>{
+      const n=counts[t.n]>1?t.n+" ("+t.type+")":t.n;
+      const land=t.area.toFixed(2),water=t.water.toFixed(2);
+      const fact=KNOWN_FACTS[t.n]||("📍 Census geography fact: "+t.n+" is a Pennsylvania "+t.type+" covering "+land+" square miles of land"+(t.water>0.005?" and "+water+" square miles of water.":"."));
+      return {...t,n,f:fact};
+    });
+    console.info("Loaded "+PZ.length+" Pennsylvania places from the 2024 Census Gazetteer.");
+  }catch(error){
+    console.warn("Using built-in town bank; Census place download failed:",error);
+  }
+  puz=puzzleForDay(num);
+  if(puz.every((town,index)=>town.n===yesterdayPuzzle[index].n))puz=puzzleForDay(num+104729);
+})();
 let puz=puzzleForDay(num);
 // Avoid the same exact five-town lineup on two consecutive dates.
 const yesterdayPuzzle=puzzleForDay(num-1);
-if(puz.every((town,index)=>town.n===yesterdayPuzzle[index].n))puz=puzzleForDay(num+104729);
 let S={};try{S=JSON.parse(localStorage.getItem("ks")||"{}")}catch(e){}
 const save=()=>{try{localStorage.setItem("ks",JSON.stringify(S))}catch(e){}};
 $("pn").textContent="Puzzle #"+num+" · "+ny;
@@ -213,7 +249,7 @@ $("go").onclick=async()=>{
   $("go").disabled=true;
   $("go").textContent="Loading aerial map…";
   $("land").classList.add("hide");$("game").classList.remove("hide");
-  try{await initMap();round();}
+  try{await censusReady;await initMap();round();}
   catch(e){$("game").classList.add("hide");$("land").classList.remove("hide");$("go").disabled=false;$("go").textContent="Try loading the map again";}
 };
 $("act").onclick=()=>{
@@ -246,7 +282,7 @@ function show(tot,rs){
   tick();setInterval(tick,3e4);
 }
 $("share").onclick=async()=>{try{await navigator.clipboard.writeText(window._share);$("share").textContent="Copied! ✓"}catch(e){prompt("Copy your score:",window._share)}};
-if(S.last===ny&&S.res)show(S.tot,S.res);
+censusReady.then(()=>{if(S.last===ny&&S.res)show(S.tot,S.res)});
 </script>
 </body>
 </html>
