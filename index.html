@@ -92,7 +92,7 @@ let r=0,pin=null,res=[],done=false,map=null,gameLayer=null,paLayer=null,paGeomet
 
 // The base layer is imagery only. Do NOT add a labels, roads, boundaries,
 // or "reference" overlay tile layer. The only linework added is PA's outline.
-const PA_BOUNDARY_URL="https://www.gis.dcnr.pa.gov/agsprod/rest/services/topo/Pubs_Pilot/MapServer/15/query?where=1%3D1&outFields=State&returnGeometry=true&outSR=4326&f=geojson";
+const PA_BOUNDARY_URL="https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json";
 
 function pointInRing(point,ring){
   const x=point.lng,y=point.lat;let inside=false;
@@ -126,10 +126,11 @@ async function initMap(){
     try{
       const response=await fetch(PA_BOUNDARY_URL);
       if(!response.ok)throw new Error("Boundary service returned "+response.status);
-      const geojson=await response.json();
-      if(!geojson.features||!geojson.features.length)throw new Error("No Pennsylvania boundary returned");
-      paGeometry=geojson.features[0].geometry;
-      paLayer=L.geoJSON(geojson,{
+      const allStates=await response.json();
+      const paFeature=allStates.features?.find(feature=>feature.properties?.name==="Pennsylvania");
+      if(!paFeature)throw new Error("Pennsylvania boundary was not found in the GeoJSON");
+      paGeometry=paFeature.geometry;
+      paLayer=L.geoJSON(paFeature,{
         interactive:false,
         style:{color:"#ffffff",weight:3,opacity:1,fill:false}
       }).addTo(map);
@@ -156,7 +157,7 @@ async function initMap(){
     }
     gameLayer=L.layerGroup().addTo(map);
     requestAnimationFrame(()=>map.invalidateSize());
-  })();
+  })().catch(error=>{mapReady=null;throw error;});
   return mapReady;
 }
 function round(){
