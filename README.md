@@ -1,15 +1,57 @@
-# Keystone Pins — deploy
+# Keystone Pins
 
-Static site: just `index.html`. No build step.
+A static daily Pennsylvania town-guessing game. The site is a single `index.html` file; no build step is required.
 
-## Fastest: Cloudflare Pages (drag & drop, no GitHub needed)
-1. dash.cloudflare.com → Workers & Pages → Create → Pages → Upload assets.
-2. Name the project `keystonepins`, drag in this folder (or the zip), Deploy.
-3. Custom domains → add keystonepins.com (if the domain isn't on Cloudflare, add the CNAME it shows at your registrar).
+## Map implementation
 
-## Later: GitHub auto-deploy
-Push this folder to a repo, then Pages → Connect to Git; every push redeploys.
+- Leaflet handles map navigation, zooming, dragging, touch gestures, and guess placement.
+- Esri World Imagery supplies the aerial/satellite basemap.
+- The basemap is imagery-only: the app intentionally does **not** add roads, place names, labels, or a reference-label overlay.
+- The Pennsylvania state outline is loaded as GeoJSON from the Pennsylvania DCNR GIS service. Only the state outline is drawn on top of the imagery.
+- The imagery tiles are loaded on demand, so no large aerial image needs to be stored in this repository.
 
-## Before launch
-- Human-review every fun fact in the `PZ` array in index.html.
-- Grow the puzzle pool (currently 3; they repeat).
+## Local preview
+
+Open `index.html` in a local web server (for example, VS Code Live Server). Because the PA boundary is fetched from an external GIS service, serving the file over localhost is preferable to opening it directly as a `file://` URL.
+
+## Deploy with the existing Cloudflare Worker
+
+The existing site is deployed as a Cloudflare Worker at:
+
+https://keystonepins.william-bednarz.workers.dev/
+
+If the Worker is already configured to serve the repository's `index.html`, pushing this commit to the connected GitHub branch should trigger a deployment automatically. If it is not connected to GitHub, use the Cloudflare dashboard instructions below.
+
+### Check whether GitHub auto-deploy is enabled
+
+1. Open the [Cloudflare dashboard](https://dash.cloudflare.com/).
+2. Go to **Workers & Pages** and select the `keystonepins` Worker.
+3. Open **Settings → Builds** (or the build/deployment configuration shown for the Worker).
+4. Confirm the GitHub repository is `willbed34/keystone-pins` and the production branch is `main`.
+5. If it is connected, a push to `main` should start a deployment. Check the Worker’s **Deployments** tab for the latest successful deployment.
+
+### If the Worker is not connected to GitHub
+
+Use Cloudflare's Git integration for Workers if available in the project, and connect:
+- Repository: `willbed34/keystone-pins`
+- Production branch: `main`
+- Build command: leave blank (no build step)
+- Deploy command: configure the Worker to serve the static assets, if prompted
+
+Do not create a separate Pages project unless you specifically want to migrate away from the existing Worker URL.
+
+## Custom domain
+
+To use a shorter URL such as `keystonepins.com`:
+
+1. Own/register the domain and add it to Cloudflare DNS (or transfer its DNS management to Cloudflare).
+2. In **Workers & Pages → keystonepins → Settings → Domains & Routes**, choose **Add → Custom Domain**.
+3. Enter `keystonepins.com` and follow Cloudflare's DNS/TLS setup.
+4. Optionally add `www.keystonepins.com` as a redirect to the root domain.
+
+## Before public launch
+
+- Human-review every fun fact in the `PZ` array.
+- Expand the puzzle pool; currently there are three sets and they repeat.
+- Verify Esri's current terms and attribution requirements for your expected traffic and use.
+- The map requires an internet connection to load Leaflet, aerial imagery tiles, and the Pennsylvania boundary service.
