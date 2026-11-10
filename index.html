@@ -103,7 +103,23 @@ const MULT=[1,1,2,3,3],BAND=d=>d<10?"🎯":d<40?"🔥":d<120?"😬":"💀";
 const $=id=>document.getElementById(id);
 const ny=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York"}).format(new Date());
 const num=Math.round((Date.UTC(...ny.split("-").map((v,i)=>i===1?v-1:+v))-Date.UTC(2026,10,10))/864e5)+1;
-const puz=PZ[((num-1)%PZ.length+PZ.length)%PZ.length];
+// Pick one town from each difficulty tier using the day number as a seed.
+// This means every player gets the same daily puzzle, without a database or cron job.
+// The existing three reviewed puzzles form five tiers (easy → hard).
+const DAILY_TIERS=Array.from({length:5},(_,roundIndex)=>PZ.map(day=>day[roundIndex]));
+function puzzleForDay(dayNumber){
+  let seed=(Math.imul(dayNumber,0x9e3779b1)^0x85ebca6b)>>>0;
+  if(seed===0)seed=1;
+  const random=()=>{
+    seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;
+    return (seed>>>0)/4294967296;
+  };
+  return DAILY_TIERS.map(tier=>tier[Math.floor(random()*tier.length)]);
+}
+let puz=puzzleForDay(num);
+// Avoid the same exact five-town lineup on two consecutive dates.
+const yesterdayPuzzle=puzzleForDay(num-1);
+if(puz.every((town,index)=>town.n===yesterdayPuzzle[index].n))puz=puzzleForDay(num+104729);
 let S={};try{S=JSON.parse(localStorage.getItem("ks")||"{}")}catch(e){}
 const save=()=>{try{localStorage.setItem("ks",JSON.stringify(S))}catch(e){}};
 $("pn").textContent="Puzzle #"+num+" · "+ny;
