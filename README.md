@@ -1,5 +1,7 @@
 # Pinnsylvania
 
+**Play:** https://pinnsylvania.win/
+
 A static daily Pennsylvania town-guessing game. The site is a single `index.html` file; no build step is required.
 
 ## Map implementation
@@ -16,7 +18,11 @@ Open `index.html` in a local web server (for example, VS Code Live Server). Beca
 
 ## Deploy with the existing Cloudflare Worker
 
-The existing site is deployed as a Cloudflare Worker at:
+The public site uses the custom domain:
+
+https://pinnsylvania.win/
+
+The underlying Cloudflare Worker endpoint remains available at:
 
 https://keystonepins.william-bednarz.workers.dev/
 
@@ -42,12 +48,12 @@ Do not create a separate Pages project unless you specifically want to migrate a
 
 ## Custom domain
 
-To use a shorter URL such as `keystonepins.com`:
+The production custom domain is `pinnsylvania.win`:
 
 1. Own/register the domain and add it to Cloudflare DNS (or transfer its DNS management to Cloudflare).
 2. In **Workers & Pages → keystonepins → Settings → Domains & Routes**, choose **Add → Custom Domain**.
 3. Enter `keystonepins.com` and follow Cloudflare's DNS/TLS setup.
-4. Optionally add `www.keystonepins.com` as a redirect to the root domain.
+4. Optionally configure `www.pinnsylvania.win` as a redirect to `pinnsylvania.win`.
 
 ## Before public launch
 
