@@ -133,15 +133,17 @@ const censusReady=(async()=>{
     if(records.length<1900)throw new Error("Incomplete Pennsylvania Gazetteer: "+records.length+" records");
     const parsed=records.map(row=>{
       const rawName=row[3]||"";
-      const match=rawName.match(/^(.*)\\s+(city|borough|CDP|town|municipality)$/i);
+      const match=rawName.match(/^(.*)\s+(city|borough|CDP|town|municipality)$/i);
       const name=(match?match[1]:rawName).trim();
       const type=match?match[2].toLowerCase():"place";
       const lat=Number(row[10]),lon=Number(row[11]),area=Number(row[8]),water=Number(row[9]);
-      return {n:name,type,lat,lon,area:Number.isFinite(area)?area:0,water:Number.isFinite(water)?water:0};
+      return {n:name,type,geoid:row[1],lat,lon,area:Number.isFinite(area)?area:0,water:Number.isFinite(water)?water:0};
     }).filter(t=>t.n&&Number.isFinite(t.lat)&&Number.isFinite(t.lon)&&t.lat>39&&t.lat<43&&t.lon<-74&&t.lon>-81);
     const counts={};parsed.forEach(t=>counts[t.n]=(counts[t.n]||0)+1);
+    const typeCounts={};parsed.forEach(t=>{const key=t.n+"|"+t.type;typeCounts[key]=(typeCounts[key]||0)+1});
     PZ=parsed.map(t=>{
-      const n=counts[t.n]>1?t.n+" ("+t.type+")":t.n;
+      let n=counts[t.n]>1?t.n+" ("+t.type+")":t.n;
+      if(typeCounts[t.n+"|"+t.type]>1)n+=" · "+t.geoid;
       const land=t.area.toFixed(2),water=t.water.toFixed(2);
       const fact=KNOWN_FACTS[t.n]||("📍 Census geography fact: "+t.n+" is a Pennsylvania "+t.type+" covering "+land+" square miles of land"+(t.water>0.005?" and "+water+" square miles of water.":"."));
       return {...t,n,f:fact};
