@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f6f3ec">
-<title>Keystone Pins — Daily PA Town Game</title>
+<title>Pinnsylvania — Daily PA Town Game</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
 <style>
 :root{--bg:#f6f3ec;--card:#fff;--ink:#1b2a41;--mute:#6b7280;--navy:#1b3a6b;--gold:#c98a0b;--ok:#2f8f4e;--bad:#c0392b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -34,7 +34,7 @@ button:disabled{opacity:.4;cursor:default}
 </head>
 <body>
 <main>
-<h1>📍 Keystone Pins</h1>
+<h1>📍 Pinnsylvania</h1>
 <p class="sub">How well do you actually know PA?</p>
 <div id="land" class="card">
   <p style="margin:0 0 4px"><b id="pn"></b></p>
@@ -198,7 +198,7 @@ function show(tot,rs){
   $("land").classList.add("hide");$("game").classList.add("hide");$("recap").classList.remove("hide");
   $("tot").textContent=tot+" / 1000";$("strk").textContent="🔥 "+S.streak+"-day streak";
   $("rows").innerHTML=puz.map((t,i)=>"<div class='row'><span>"+rs[i].b+" "+t.n+"</span><b>"+(rs[i].w??rs[i].p)+"/100"+(MULT[i]>1?" ×"+MULT[i]:"")+"</b></div><p class='ff'>"+t.f+"</p>").join("");
-  window._share="Keystone Pins #"+num+" — "+tot+"/1000 🔥 "+S.streak+"\n"+rs.map(x=>x.b+(x.w??x.p)).join(" · ")+"\nkeystonepins.com";
+  window._share="Pinnsylvania #"+num+" — "+tot+"/1000 🔥 "+S.streak+"\n"+rs.map(x=>x.b+(x.w??x.p)).join(" · ")+"\nhttps://keystonepins.william-bednarz.workers.dev/";
   const tick=()=>{const now=new Date(),midnight=new Date(now);midnight.setHours(24,0,0,0);const seconds=Math.floor((midnight-now)/1000);$("cd").textContent="Next puzzle in "+Math.floor(seconds/3600)+"h "+Math.floor(seconds%3600/60)+"m"};
   tick();setInterval(tick,3e4);
 }
