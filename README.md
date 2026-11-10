@@ -55,9 +55,39 @@ The production custom domain is `pinnsylvania.win`:
 3. Enter `pinnsylvania.win` and follow Cloudflare's DNS/TLS setup.
 4. Optionally configure `www.pinnsylvania.win` as a redirect to `pinnsylvania.win`.
 
+## Daily score average (Cloudflare D1)
+
+The Worker adds two same-origin endpoints:
+
+- `GET /api/daily-average?day=YYYY-MM-DD` returns the shared average and number of submitted scores for that Eastern Time date.
+- `POST /api/score` records a score once per browser ID per day. The database primary key prevents duplicate submissions from the same browser ID.
+
+The score API uses the D1 binding named `DB`. The D1 database ID is configured in `wrangler.toml`. Before deploying, confirm that `database_name` in that file exactly matches the name of the existing database in Cloudflare.
+
+Apply the schema to the **remote** D1 database once:
+
+```sh
+npx wrangler d1 migrations apply pinnsylvania-scores --remote
+```
+
+Then deploy the Worker and static assets:
+
+```sh
+npx wrangler deploy
+```
+
+For Cloudflare Git deployments, set the deploy command to `npx wrangler deploy` (the repository now includes `wrangler.toml`). The `.assetsignore` file prevents Worker source, migration SQL, and repository documentation from being published as public website files.
+
+## Town pool and difficulty
+
+- The app loads Pennsylvania place coordinates and land area from the 2024 Census Gazetteer.
+- It uses the 2020 Decennial Census population table to keep incorporated places and filter census-designated places: CDPs with at least 5,000 residents remain, along with Hershey as a deliberate exception. If the population service is unavailable, it safely falls back to incorporated places plus Hershey.
+- Recognizable places (including Allentown, Erie, and Hershey) are explicitly placed in the easiest difficulty tier; remaining towns are ordered by 2020 population as a rough familiarity proxy.
+- The original hand-written facts are preserved. Other places receive a basic geographic fact generated from Census land/water area; those generic facts are not individually researched trivia.
+
 ## Before public launch
 
-- Human-review every fun fact in the `PZ` array.
-- Expand the town pool in the `PZ` array. The daily generator selects one town from each of five difficulty positions using the Eastern Time day number as its seed. Every visitor therefore sees the same lineup on a given day, with a different deterministic lineup on subsequent days; no daily file, database, or scheduled job is required.
+- Confirm the D1 database name in `wrangler.toml`, apply the migration, and verify the two API endpoints after deployment.
+- Human-review the original hand-researched facts and consider replacing generic area facts with locally researched trivia.
 - Verify Esri's current terms and attribution requirements for your expected traffic and use.
-- The map requires an internet connection to load Leaflet, aerial imagery tiles, and the Pennsylvania boundary service.
+- The map requires an internet connection to load Leaflet, aerial imagery tiles, the Pennsylvania boundary, and Census place/population data.
