@@ -1,0 +1,13 @@
+name = "keystonepins"
+main = "worker.js"
+compatibility_date = "2026-11-10"
+
+[assets]
+directory = "."
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "pinnsylvania-scores"
+database_id = "b8c4f434-5ed5-459a-830b-a98c74dc6091"
