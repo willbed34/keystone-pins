@@ -76,6 +76,7 @@ button:disabled{opacity:.4;cursor:default}
 <div id="recap" class="card hide">
   <p class="big" id="tot"></p><p class="sub" style="text-align:center" id="strk"></p>
   <div id="rows"></div>
+  <p class="ff" id="dailyAvg" style="text-align:center;font-weight:700;margin-top:12px">Today's average: loading…</p>
   <button id="share" style="margin-top:12px">Share your score</button>
   <p class="ff" id="cd" style="text-align:center;margin-top:10px"></p>
 </div>
@@ -266,7 +267,7 @@ $("act").onclick=()=>{
   $("sc").textContent="Score: "+res.reduce((s,x)=>s+x.p,0);
   $("act").textContent=r<4?"Next town →":"See results";
 };
-function finish(){
+async function finish(){
   const tot=res.reduce((s,x)=>s+x.p,0);
   if(S.last!==ny){
     const yesterday=new Date(Date.parse(ny+"T12:00:00Z")-864e5).toISOString().slice(0,10);
@@ -274,11 +275,42 @@ function finish(){
     S.last=ny;S.tot=tot;S.res=res;save();
   }
   show(S.tot,S.res);
+  await submitDailyScore(S.tot);
+}
+// Submit at most one score per browser per day; the server enforces this with a
+// UNIQUE(day, player_id) constraint. The ID is random and stays in localStorage.
+function getPlayerId(){
+  if(!S.playerId){S.playerId=(crypto.randomUUID?crypto.randomUUID():("p"+Date.now()+Math.random().toString(36).slice(2)));save();}
+  return S.playerId;
+}
+async function loadDailyAverage(){
+  try{
+    const response=await fetch("/api/daily-average?day="+encodeURIComponent(ny),{cache:"no-store"});
+    if(!response.ok)throw new Error("Average endpoint returned "+response.status);
+    const data=await response.json();
+    $("dailyAvg").textContent=data.count
+      ?"Today's average: "+Math.round(data.average)+" / 1000 ("+data.count+" "+(data.count===1?"player":"players")+")"
+      :"Today's average: be the first to play!";
+  }catch(error){
+    $("dailyAvg").textContent="Today's average unavailable right now.";
+    console.warn("Could not load daily average:",error);
+  }
+}
+async function submitDailyScore(score){
+  try{
+    const response=await fetch("/api/score",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({day:ny,score,playerId:getPlayerId()})});
+    if(!response.ok)throw new Error("Score endpoint returned "+response.status);
+    await loadDailyAverage();
+  }catch(error){
+    $("dailyAvg").textContent="Daily average will appear when the score service is available.";
+    console.warn("Could not submit daily score:",error);
+  }
 }
 function show(tot,rs){
   $("land").classList.add("hide");$("game").classList.add("hide");$("recap").classList.remove("hide");
   $("tot").textContent=tot+" / 1000";$("strk").textContent="🔥 "+S.streak+"-day streak";
   $("rows").innerHTML=puz.map((t,i)=>"<div class='row'><span>"+rs[i].b+" "+t.n+"</span><b>"+(rs[i].w??rs[i].p)+"/100"+(MULT[i]>1?" ×"+MULT[i]:"")+"</b></div><p class='ff'>"+(t.f||"Pennsylvania place; coordinates from the 2024 U.S. Census Gazetteer.")+"</p>").join("");
+  loadDailyAverage();
   window._share="Pinnsylvania #"+num+" — "+tot+"/1000 🔥 "+S.streak+"\n"+rs.map(x=>x.b+(x.w??x.p)).join(" · ")+"\nhttps://pinnsylvania.win/";
   const tick=()=>{const now=new Date(),midnight=new Date(now);midnight.setHours(24,0,0,0);const seconds=Math.floor((midnight-now)/1000);$("cd").textContent="Next puzzle in "+Math.floor(seconds/3600)+"h "+Math.floor(seconds%3600/60)+"m"};
   tick();setInterval(tick,3e4);
