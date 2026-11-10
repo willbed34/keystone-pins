@@ -14,35 +14,49 @@
 <title>Pinnsylvania — Daily PA Town Game</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
 <style>
-:root{--bg:#f6f3ec;--card:#fff;--ink:#1b2a41;--mute:#6b7280;--navy:#1b3a6b;--gold:#c98a0b;--ok:#2f8f4e;--bad:#c0392b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10151f;--card:#1a2232;--ink:#eef1f6;--mute:#9aa4b5;--navy:#7fa6e8;--gold:#f0b429;--ok:#5fcf84;--bad:#ff7b6b;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#10151f;--card:#1a2232;--ink:#eef1f6;--mute:#9aa4b5;--navy:#7fa6e8;--gold:#f0b429;--ok:#5fcf84;--bad:#ff7b6b;color-scheme:dark}
+:root{--bg:#f4f0e6;--card:#fffdf8;--ink:#172b4d;--mute:#687386;--navy:#173b70;--gold:#d6a329;--ok:#2f8f4e;--bad:#c0392b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101722;--card:#1a2638;--ink:#edf2fa;--mute:#a3afc1;--navy:#8eafe2;--gold:#e4b84f;--ok:#5fcf84;--bad:#ff7b6b;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#101722;--card:#1a2638;--ink:#edf2fa;--mute:#a3afc1;--navy:#8eafe2;--gold:#e4b84f;--ok:#5fcf84;--bad:#ff7b6b;color-scheme:dark}
 *{box-sizing:border-box}html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font-family:Georgia,'Times New Roman',serif;min-height:100%}
+.top-rule{height:6px;background:linear-gradient(90deg,#173b70 0 47%,#d6a329 47% 53%,#173b70 53% 100%)}
 main{max-width:760px;margin:0 auto;padding:14px}
-h1{font-size:1.5rem;margin:.2rem 0;color:var(--navy);letter-spacing:.5px}
-.sub{color:var(--mute);font-style:italic;margin:0 0 12px}
-.card{background:var(--card);border-radius:14px;padding:14px;box-shadow:0 1px 4px #0002;margin-bottom:12px}
-button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:12px 18px;background:var(--navy);color:#fff;cursor:pointer;width:100%;font-size:1rem}
+.brand{display:flex;align-items:center;gap:12px;margin:5px 0 16px}
+.keystone-mark{width:48px;height:48px;display:grid;place-items:center;flex:none;clip-path:polygon(12% 0,88% 0,100% 100%,0 100%);background:var(--navy);color:#f2c75c;font:800 .95rem system-ui,sans-serif;letter-spacing:1px;padding-top:3px}
+.eyebrow{font:700 .68rem system-ui,sans-serif;letter-spacing:1.5px;color:var(--gold);margin:0 0 2px}
+h1{font-size:1.65rem;margin:0;color:var(--navy);letter-spacing:.2px}
+.sub{color:var(--mute);font-style:italic;margin:2px 0 0}
+.card{background:var(--card);border:1px solid #173b7020;border-top:3px solid var(--gold);border-radius:14px;padding:14px;box-shadow:0 2px 8px #172b4d0d;margin-bottom:12px}
+button{font:inherit;font-weight:700;border:1px solid #102d57;border-radius:10px;padding:12px 18px;background:var(--navy);color:#fff;cursor:pointer;width:100%;font-size:1rem;transition:filter .15s,transform .15s}
+button:not(:disabled):hover{filter:brightness(1.12)}
+button:not(:disabled):active{transform:translateY(1px)}
 button:disabled{opacity:.4;cursor:default}
 .hud{display:flex;justify-content:space-between;gap:12px;font-family:system-ui,sans-serif;font-size:.9rem;color:var(--mute);margin-bottom:6px}
-.town{font-size:1.6rem;font-weight:700;text-align:center;margin:4px 0 8px}
-#map{width:100%;height:min(66vh,560px);min-height:360px;border-radius:10px;overflow:hidden;background:#d9e0e5;z-index:1}
+.town{font-size:1.6rem;font-weight:700;text-align:center;margin:4px 0 8px;color:var(--navy)}
+#map{width:100%;height:min(66vh,560px);min-height:360px;border-radius:10px;overflow:hidden;background:#d9e0e5;z-index:1;border:2px solid #173b7022}
 .leaflet-container{font-family:system-ui,sans-serif;touch-action:pan-x pan-y}
 .leaflet-control-attribution{font-size:10px!important}
+.leaflet-control-zoom a{color:#173b70!important}
 .map-help{font: .82rem system-ui,sans-serif;color:var(--mute);text-align:center;margin:8px 0 0}
 .fact{margin:10px 0;line-height:1.45}
 .row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #8883;font-family:system-ui,sans-serif;font-size:.95rem}
 .big{font-size:2.6rem;font-weight:700;text-align:center;color:var(--gold);margin:0}
 .ff{font-size:.92rem;color:var(--mute);margin:2px 0 8px;line-height:1.35}
 .hide{display:none}
-@media(max-width:480px){main{padding:10px}#map{height:58vh;min-height:340px}.card{padding:12px}}
+@media(max-width:480px){main{padding:10px}.brand{margin-bottom:13px}#map{height:58vh;min-height:340px}.card{padding:12px}}
 </style>
 </head>
 <body>
+<div class="top-rule" aria-hidden="true"></div>
 <main>
-<h1>📍 Pinnsylvania</h1>
-<p class="sub">How well do you actually know PA?</p>
+<header class="brand">
+  <div class="keystone-mark" aria-hidden="true">PA</div>
+  <div>
+    <p class="eyebrow">THE KEYSTONE STATE · DAILY TOWN CHALLENGE</p>
+    <h1>Pinnsylvania</h1>
+    <p class="sub">How well do you actually know PA?</p>
+  </div>
+</header>
 <div id="land" class="card">
   <p style="margin:0 0 4px"><b id="pn"></b></p>
   <p class="ff">Place 5 towns on an unlabeled aerial map of Pennsylvania. Closer pins earn more points — 1,000 possible. New puzzle every day.</p>
@@ -126,7 +140,7 @@ async function initMap(){
       minZoom:6,maxZoom:19,zoomSnap:0.5
     });
     L.tileLayer("https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{
-      maxZoom:19,maxNativeZoom:18,
+      maxZoom:14,maxNativeZoom:14,
       attribution:"Imagery © Esri, Maxar, Earthstar Geographics"
     }).addTo(map);
 
@@ -167,8 +181,14 @@ async function initMap(){
   })().catch(error=>{mapReady=null;throw error;});
   return mapReady;
 }
+function resetMapView(){
+  if(!map||!paLayer)return;
+  map.invalidateSize({pan:false});
+  map.fitBounds(paLayer.getBounds(),{padding:[12,12],animate:false});
+}
 function round(){
   const t=puz[r];pin=null;done=false;gameLayer.clearLayers();$("info").textContent="";
+  resetMapView();
   $("rd").textContent="Round "+(r+1)+" of 5 · ×"+MULT[r]+" multiplier";
   $("sc").textContent="Score: "+res.reduce((s,x)=>s+x.p,0);
   $("town").textContent=t.n;$("act").textContent="Tap the map to drop a pin";$("act").disabled=true;
