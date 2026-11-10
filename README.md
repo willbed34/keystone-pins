@@ -52,12 +52,12 @@ The production custom domain is `pinnsylvania.win`:
 
 1. Own/register the domain and add it to Cloudflare DNS (or transfer its DNS management to Cloudflare).
 2. In **Workers & Pages → keystonepins → Settings → Domains & Routes**, choose **Add → Custom Domain**.
-3. Enter `keystonepins.com` and follow Cloudflare's DNS/TLS setup.
+3. Enter `pinnsylvania.win` and follow Cloudflare's DNS/TLS setup.
 4. Optionally configure `www.pinnsylvania.win` as a redirect to `pinnsylvania.win`.
 
 ## Before public launch
 
 - Human-review every fun fact in the `PZ` array.
-- Expand the puzzle pool; currently there are three sets and they repeat.
+- Expand the town pool in the `PZ` array. The daily generator selects one town from each of five difficulty positions using the Eastern Time day number as its seed. Every visitor therefore sees the same lineup on a given day, with a different deterministic lineup on subsequent days; no daily file, database, or scheduled job is required.
 - Verify Esri's current terms and attribution requirements for your expected traffic and use.
 - The map requires an internet connection to load Leaflet, aerial imagery tiles, and the Pennsylvania boundary service.
