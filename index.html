@@ -41,7 +41,7 @@ button:disabled{opacity:.4;cursor:default}
 .leaflet-control-zoom a{color:#173b70!important}
 .map-help{font: .82rem system-ui,sans-serif;color:var(--mute);text-align:center;margin:8px 0 0}
 .fact{margin:10px 0;line-height:1.45}
-.row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #8883;font-family:system-ui,sans-serif;font-size:.95rem}
+.row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #8883;font-family:system-ui,sans-serif;font-size:.95rem}.round-tag{font-size:.76em;font-weight:600;color:var(--mute);white-space:nowrap;margin-left:3px}
 .big{font-size:2.6rem;font-weight:700;text-align:center;color:var(--gold);margin:0}
 .ff{font-size:.92rem;color:var(--mute);margin:2px 0 8px;line-height:1.35}
 .hide{display:none}
@@ -52,7 +52,7 @@ button:disabled{opacity:.4;cursor:default}
 <div class="top-rule" aria-hidden="true"></div>
 <main>
 <header class="brand">
-  <div class="keystone-mark" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M12 4H52L61 60H3L12 4Z" fill="var(--navy)" stroke="var(--gold)" stroke-width="2.5" stroke-linejoin="round"/><path d="M17 9H47L54 55H10L17 9Z" fill="none" stroke="#ffffff" stroke-opacity=".24" stroke-width="1.2"/><text x="32" y="39" text-anchor="middle" fill="#f2c75c" font-family="system-ui,sans-serif" font-size="19" font-weight="850" letter-spacing="1">PA</text></svg></div>
+  <div class="keystone-mark" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M17 4H47L53 14L60 22L56 60H8L4 22L11 14Z" fill="var(--navy)" stroke="var(--gold)" stroke-width="2.5" stroke-linejoin="round"/><path d="M20 9H44L49 17L54 24L51 55H13L10 24L15 17Z" fill="none" stroke="#ffffff" stroke-opacity=".24" stroke-width="1.2"/><text x="32" y="39" text-anchor="middle" fill="#f2c75c" font-family="system-ui,sans-serif" font-size="19" font-weight="850" letter-spacing="1">PA</text></svg></div>
   <div>
     <p class="eyebrow">THE KEYSTONE STATE · DAILY TOWN CHALLENGE</p>
     <h1>Pinnsylvania</h1>
@@ -325,7 +325,8 @@ async function submitDailyScore(score){
 function show(tot,rs){
   $("land").classList.add("hide");$("game").classList.add("hide");$("recap").classList.remove("hide");
   $("tot").textContent=tot+" / 1000";$("strk").textContent="🔥 "+S.streak+"-day streak";
-  $("rows").innerHTML=puz.map((t,i)=>"<div class='row'><span>"+rs[i].b+" "+t.n+"</span><b>"+(rs[i].w??rs[i].p)+"/100"+(MULT[i]>1?" ×"+MULT[i]:"")+"</b></div><p class='ff'>"+(t.f||"Pennsylvania place; coordinates from the 2024 U.S. Census Gazetteer.")+"</p>").join("");
+  const roundDifficulty=["Easy","Easy","Medium","Hard","Hard"];
+  $("rows").innerHTML=puz.map((t,i)=>"<div class='row'><span>"+t.n+" <small class='round-tag'>("+roundDifficulty[i]+" "+MULT[i]+"×)</small></span><b>"+rs[i].b+" "+(rs[i].w??rs[i].p)+"/100</b></div><p class='ff'>"+(t.f||"Pennsylvania place; coordinates from the 2024 U.S. Census Gazetteer.")+"</p>").join("");
   loadDailyAverage();
   window._share="Pinnsylvania #"+num+" — "+tot+"/1000 🔥 "+S.streak+"\n"+rs.map(x=>x.b+(x.w??x.p)).join(" · ")+"\nhttps://pinnsylvania.win/";
   const tick=()=>{const now=new Date(),midnight=new Date(now);midnight.setHours(24,0,0,0);const seconds=Math.floor((midnight-now)/1000);$("cd").textContent="Next puzzle in "+Math.floor(seconds/3600)+"h "+Math.floor(seconds%3600/60)+"m"};
