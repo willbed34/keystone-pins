@@ -7,7 +7,7 @@ A static daily Pennsylvania town-guessing game. The site is a single `index.html
 - Leaflet handles map navigation, zooming, dragging, touch gestures, and guess placement.
 - Esri World Imagery supplies the aerial/satellite basemap.
 - The basemap is imagery-only: the app intentionally does **not** add roads, place names, labels, or a reference-label overlay.
-- The Pennsylvania state outline is loaded as GeoJSON from the Pennsylvania DCNR GIS service. Only the state outline is drawn on top of the imagery.
+- The Pennsylvania state outline is loaded as a GeoJSON boundary file from the PublicaMundi US states dataset. The app filters that dataset to Pennsylvania and draws only its outline on top of the imagery.
 - The imagery tiles are loaded on demand, so no large aerial image needs to be stored in this repository.
 
 ## Local preview
