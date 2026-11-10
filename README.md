@@ -1,4 +1,4 @@
-# Keystone Pins
+# Pinnsylvania
 
 A static daily Pennsylvania town-guessing game. The site is a single `index.html` file; no build step is required.
 
