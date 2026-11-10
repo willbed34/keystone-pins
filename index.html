@@ -240,7 +240,7 @@ function finish(){
 function show(tot,rs){
   $("land").classList.add("hide");$("game").classList.add("hide");$("recap").classList.remove("hide");
   $("tot").textContent=tot+" / 1000";$("strk").textContent="🔥 "+S.streak+"-day streak";
-  $("rows").innerHTML=puz.map((t,i)=>"<div class='row'><span>"+rs[i].b+" "+t.n+"</span><b>"+(rs[i].w??rs[i].p)+"/100"+(MULT[i]>1?" ×"+MULT[i]:"")+"</b></div><p class='ff'>"+t.f+"</p>").join("");
+  $("rows").innerHTML=puz.map((t,i)=>"<div class='row'><span>"+rs[i].b+" "+t.n+"</span><b>"+(rs[i].w??rs[i].p)+"/100"+(MULT[i]>1?" ×"+MULT[i]:"")+"</b></div><p class='ff'>"+(t.f||"Pennsylvania place; coordinates from the 2024 U.S. Census Gazetteer.")+"</p>").join("");
   window._share="Pinnsylvania #"+num+" — "+tot+"/1000 🔥 "+S.streak+"\n"+rs.map(x=>x.b+(x.w??x.p)).join(" · ")+"\nhttps://pinnsylvania.win/";
   const tick=()=>{const now=new Date(),midnight=new Date(now);midnight.setHours(24,0,0,0);const seconds=Math.floor((midnight-now)/1000);$("cd").textContent="Next puzzle in "+Math.floor(seconds/3600)+"h "+Math.floor(seconds%3600/60)+"m"};
   tick();setInterval(tick,3e4);
