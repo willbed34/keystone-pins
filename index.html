@@ -118,7 +118,8 @@ function puzzleForDay(dayNumber){
   };
   // Larger Census places are generally easier to recognize; small places make
   // progressively harder rounds. The seed keeps the daily set deterministic.
-  const sorted=PZ.flat().slice().sort((a,b)=>b.area-a.area);
+  const veryEasy=new Set(["Philadelphia","Pittsburgh","Harrisburg","Allentown","Erie","Reading","Bethlehem","Scranton","Lancaster","York","Altoona","Williamsport","Hershey","Gettysburg","State College","Wilkes-Barre"]);
+  const sorted=PZ.flat().slice().sort((a,b)=>(Number(veryEasy.has(b.n))-Number(veryEasy.has(a.n)))||(b.population-a.population)||(b.area-a.area));
   const tiers=Array.from({length:5},(_,i)=>{
     const start=Math.floor(i*sorted.length/5),end=Math.floor((i+1)*sorted.length/5);
     return sorted.slice(start,end);
@@ -130,6 +131,15 @@ const censusReady=(async()=>{
     const response=await fetch(CENSUS_PLACES_URL,{cache:"force-cache"});
     if(!response.ok)throw new Error("Census Gazetteer returned "+response.status);
     const lines=(await response.text()).trim().split(/\r?\n/);
+    // 2020 Decennial Census population is used only to filter CDPs and order
+    // difficulty. Incorporated cities, boroughs, towns and municipalities stay.
+    const populations=new Map();
+    try{
+      const popResponse=await fetch("https://api.census.gov/data/2020/dec/pl?get=NAME%2CP1_001N&for=place%3A%2A&in=state%3A42",{cache:"force-cache"});
+      if(!popResponse.ok)throw new Error("2020 Census population API returned "+popResponse.status);
+      const popRows=await popResponse.json();
+      popRows.slice(1).forEach(row=>populations.set("42"+row[2],Number(row[1])||0));
+    }catch(popError){console.warn("2020 population data unavailable; excluding all CDPs except Hershey:",popError);}
     const records=lines.slice(1).map(line=>line.split("\t")).filter(row=>row.length>=12&&row[0]==="PA");
     if(records.length<1900)throw new Error("Incomplete Pennsylvania Gazetteer: "+records.length+" records");
     const parsed=records.map(row=>{
@@ -139,17 +149,21 @@ const censusReady=(async()=>{
       const type=match?match[2].toLowerCase():"place";
       const lat=Number(row[10]),lon=Number(row[11]),area=Number(row[8]),water=Number(row[9]);
       return {n:name,type,geoid:row[1],lat,lon,area:Number.isFinite(area)?area:0,water:Number.isFinite(water)?water:0};
+    }).map(t=>({...t,population:populations.get(t.geoid)||0}));
+    const included=parsed.filter(t=>{
+      const incorporated=["city","borough","town","municipality"].includes(t.type);
+      return incorporated||(t.type==="cdp"&&(t.n==="Hershey"||t.population>=5000));
     }).filter(t=>t.n&&Number.isFinite(t.lat)&&Number.isFinite(t.lon)&&t.lat>39&&t.lat<43&&t.lon<-74&&t.lon>-81);
-    const counts={};parsed.forEach(t=>counts[t.n]=(counts[t.n]||0)+1);
+    const counts={};included.forEach(t=>counts[t.n]=(counts[t.n]||0)+1);
     const typeCounts={};parsed.forEach(t=>{const key=t.n+"|"+t.type;typeCounts[key]=(typeCounts[key]||0)+1});
-    PZ=parsed.map(t=>{
+    PZ=included.map(t=>{
       let n=counts[t.n]>1?t.n+" ("+t.type+")":t.n;
       if(typeCounts[t.n+"|"+t.type]>1)n+=" · "+t.geoid;
       const land=t.area.toFixed(2),water=t.water.toFixed(2);
       const fact=KNOWN_FACTS[t.n]||("📍 Census geography fact: "+t.n+" is a Pennsylvania "+t.type+" covering "+land+" square miles of land"+(t.water>0.005?" and "+water+" square miles of water.":"."));
       return {...t,n,f:fact};
     });
-    console.info("Loaded "+PZ.length+" Pennsylvania places from the 2024 Census Gazetteer.");
+    console.info("Loaded "+PZ.length+" Pennsylvania places (incorporated places plus CDPs with 5,000+ residents and Hershey).");
   }catch(error){
     console.warn("Using built-in town bank; Census place download failed:",error);
   }
