@@ -344,7 +344,7 @@ function getPlayerId(){
 }
 async function loadDailyAverage(){
   try{
-    const response=await fetch("/api/daily-average?day="+encodeURIComponent(ny),{cache:"no-store"});
+    const response=await fetch("/api/daily-average?game=pa&day="+encodeURIComponent(ny),{cache:"no-store"});
     if(!response.ok)throw new Error("Average endpoint returned "+response.status);
     const data=await response.json();
     $("dailyAvg").textContent=data.count
@@ -357,7 +357,7 @@ async function loadDailyAverage(){
 }
 async function submitDailyScore(score){
   try{
-    const response=await fetch("/api/score",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({day:ny,score,playerId:getPlayerId()})});
+    const response=await fetch("/api/score",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({day:ny,score,playerId:"pa-"+getPlayerId()})});
     if(!response.ok)throw new Error("Score endpoint returned "+response.status);
     await loadDailyAverage();
   }catch(error){
