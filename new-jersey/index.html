@@ -131,7 +131,7 @@ const censusReady=(async()=>{
       const popResponse=await fetch("https://api.census.gov/data/2020/dec/pl?get=NAME%2CP1_001N&for=place%3A%2A&in=state%3A34",{cache:"force-cache"});
       if(!popResponse.ok)throw new Error("2020 Census population API returned "+popResponse.status);
       const popRows=await popResponse.json();
-      popRows.slice(1).forEach(row=>populations.set("42"+row[3],Number(row[1])||0));
+      popRows.slice(1).forEach(row=>populations.set("34"+row[3],Number(row[1])||0));
     }catch(popError){console.warn("2020 population data unavailable; excluding all CDPs except Hershey:",popError);}
     const records=lines.slice(1).map(line=>line.split("\t")).filter(row=>row.length>=12&&row[0]==="NJ");
     if(records.length<1900)throw new Error("Incomplete Pennsylvania Gazetteer: "+records.length+" records");
