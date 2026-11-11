@@ -3,46 +3,46 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#e9f3f2">
+<meta name="theme-color" content="#0b563f">
 <meta name="description" content="A daily New Jersey map game. Drop pins on five Garden State towns and test how well you know the state.">
 <link rel="canonical" href="https://pinnsylvania.win/new-jersey">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='29' fill='%23123d4a' stroke='%23ff765e' stroke-width='3'/%3E%3Ccircle cx='32' cy='23' r='10' fill='%23ffbd72'/%3E%3Cpath d='M9 38Q20 31 32 38T55 38M9 47Q20 40 32 47T55 47' fill='none' stroke='%237ed3c2' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='5' y='5' width='54' height='54' rx='9' fill='%230b563f' stroke='%23f4c542' stroke-width='3'/%3E%3Cpath d='M22 13h20v38H22z' fill='%23252b2c'/%3E%3Cpath d='M27 15v34M37 15v34' stroke='white' stroke-width='2' stroke-dasharray='5 4'/%3E%3C/svg%3E">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Jersey Jolt — Daily New Jersey Map Game">
+<meta property="og:title" content="Garden State Guess — Daily New Jersey Map Game">
 <meta property="og:description" content="Drop pins across the Garden State in five daily rounds. How well do you know New Jersey?">
 <meta property="og:url" content="https://pinnsylvania.win/new-jersey">
 <meta name="twitter:card" content="summary">
-<title>Jersey Jolt — Daily New Jersey Map Game</title>
+<title>Garden State Guess — Daily New Jersey Map Game</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
 <style>
-:root{--bg:#e9f3f2;--card:#fbfffe;--ink:#12313b;--mute:#617a80;--navy:#123d4a;--gold:#ff765e;--ok:#218b78;--bad:#c04d4d;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101d22;--card:#192d33;--ink:#edf8f6;--mute:#a5bfbd;--navy:#70c8b6;--gold:#ff947e;--ok:#62d0b0;--bad:#ff8b82;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#101d22;--card:#192d33;--ink:#edf8f6;--mute:#a5bfbd;--navy:#70c8b6;--gold:#ff947e;--ok:#62d0b0;--bad:#ff8b82;color-scheme:dark}
+:root{--bg:#e9ece8;--card:#fffefa;--ink:#202b27;--mute:#68736c;--navy:#0b563f;--gold:#e5b82e;--ok:#218b55;--bad:#b8433c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171d1a;--card:#222b26;--ink:#f4f5ef;--mute:#b2bcb4;--navy:#2b8a62;--gold:#f4c542;--ok:#69c58c;--bad:#ff8b82;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#171d1a;--card:#222b26;--ink:#f4f5ef;--mute:#b2bcb4;--navy:#2b8a62;--gold:#f4c542;--ok:#69c58c;--bad:#ff8b82;color-scheme:dark}
 *{box-sizing:border-box}html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font-family:ui-rounded,'Avenir Next',system-ui,sans-serif;min-height:100%}
-.top-rule{height:7px;background:linear-gradient(90deg,#123d4a 0 38%,#7ed3c2 38% 62%,#ff765e 62% 82%,#ffbd72 82% 100%)}
+.top-rule{height:9px;background:repeating-linear-gradient(90deg,#f4c542 0 34px,#0b563f 34px 68px,#fff 68px 102px)}
 main{max-width:760px;margin:0 auto;padding:14px}
 .brand{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;margin:14px 0 22px}
-.shore-mark{width:62px;height:62px;display:grid;place-items:center;flex:none;filter:drop-shadow(0 3px 3px #0002)}
+.shore-mark{width:66px;height:66px;display:grid;place-items:center;flex:none;filter:drop-shadow(0 3px 3px #0003)}
 .shore-mark svg{display:block;width:100%;height:100%}
-.eyebrow{font:700 .7rem system-ui,sans-serif;letter-spacing:2px;color:var(--gold);margin:0 0 4px}
+.eyebrow{font:800 .7rem system-ui,sans-serif;letter-spacing:2px;color:var(--navy);margin:0 0 4px}
 h1{font-size:clamp(2rem,5vw,2.45rem);margin:0;color:var(--navy);letter-spacing:.2px;line-height:1.08}
-.sub{color:var(--mute);font-style:italic;margin:5px 0 0;font-size:1.08rem}
-.card{background:var(--card);border:1px solid #123d4a20;border-top:3px solid var(--gold);border-radius:16px;padding:14px;box-shadow:0 5px 18px #123d4a10;margin-bottom:12px}
-button{font:inherit;font-weight:700;border:1px solid #0d303a;border-radius:999px;padding:12px 18px;background:var(--navy);color:#fff;cursor:pointer;width:100%;font-size:1rem;transition:filter .15s,transform .15s}
+.sub{color:var(--mute);font-weight:650;margin:5px 0 0;font-size:1.02rem;letter-spacing:.2px}
+.card{background:var(--card);border:1px solid #0b563f28;border-top:4px solid var(--navy);border-radius:10px;padding:14px;box-shadow:0 5px 18px #17251c12;margin-bottom:12px}
+button{font:inherit;font-weight:800;border:2px solid #f4c542;border-radius:7px;padding:12px 18px;background:var(--navy);color:#fff;cursor:pointer;width:100%;font-size:1rem;letter-spacing:.2px;transition:filter .15s,transform .15s}
 button:not(:disabled):hover{filter:brightness(1.12)}
 button:not(:disabled):active{transform:translateY(1px)}
 button:disabled{opacity:.4;cursor:default}
 .hud{display:flex;justify-content:space-between;gap:12px;font-family:system-ui,sans-serif;font-size:.9rem;color:var(--mute);margin-bottom:6px}
-.town{font-size:1.6rem;font-weight:700;text-align:center;margin:4px 0 8px;color:var(--navy)}
-#map{width:100%;height:min(66vh,560px);min-height:360px;border-radius:10px;overflow:hidden;background:#d9e0e5;z-index:1;border:2px solid #123d4a22}
+.town{font-size:1.6rem;font-weight:800;text-align:center;margin:4px 0 8px;color:var(--navy);letter-spacing:.2px}
+#map{width:100%;height:min(66vh,560px);min-height:360px;border-radius:7px;overflow:hidden;background:#d9e0e5;z-index:1;border:3px solid #252b2c}
 .map-wrap{position:relative}
 .map-action{position:absolute;z-index:500;left:12px;right:12px;bottom:12px;width:calc(100% - 24px);box-shadow:0 3px 12px #07142688;border:1px solid #ffffff55;background:var(--navy);min-height:48px}
-.map-action:disabled{opacity:.88;background:#344b6a;color:#e3eaf4;border-color:#ffffff33}
-.county-note{font-weight:700;color:var(--gold);margin-top:6px}
+.map-action:disabled{opacity:.9;background:#34483e;color:#e3eae4;border-color:#f4c542}
+.county-note{font-weight:800;color:var(--navy);margin-top:6px}
 .leaflet-container{font-family:system-ui,sans-serif;touch-action:pan-x pan-y}
 .leaflet-control-attribution{font-size:10px!important}
-.leaflet-control-zoom a{color:#123d4a!important}
+.leaflet-control-zoom a{color:#0b563f!important}
 .map-help{font: .82rem system-ui,sans-serif;color:var(--mute);text-align:center;margin:8px 0 0}
 .fact{margin:10px 0;line-height:1.45}
 .row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #8883;font-family:system-ui,sans-serif;font-size:.95rem}.round-tag{font-size:.76em;font-weight:600;color:var(--mute);white-space:nowrap;margin-left:3px}
@@ -56,17 +56,17 @@ button:disabled{opacity:.4;cursor:default}
 <div class="top-rule" aria-hidden="true"></div>
 <main>
 <header class="brand">
-  <div class="shore-mark" aria-hidden="true"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="29" fill="var(--navy)" stroke="var(--gold)" stroke-width="2.5"/><circle cx="32" cy="23" r="10" fill="#ffbd72"/><path d="M9 38Q20 31 32 38T55 38M9 47Q20 40 32 47T55 47" fill="none" stroke="#7ed3c2" stroke-width="4" stroke-linecap="round"/></svg></div>
+  <div class="shore-mark" aria-hidden="true"><svg viewBox="0 0 66 66"><rect x="4" y="4" width="58" height="58" rx="8" fill="#0b563f" stroke="#f4c542" stroke-width="3"/><path d="M21 12h24v42H21z" fill="#252b2c"/><path d="M26 14v38M40 14v38" stroke="#fff" stroke-width="2.5" stroke-dasharray="6 5"/><path d="M10 33h8M48 33h8" stroke="#f4c542" stroke-width="3" stroke-linecap="round"/></svg></div>
   <div>
-    <p class="eyebrow">THE GARDEN STATE · DAILY MAP CHALLENGE</p>
-    <h1>Jersey Jolt</h1>
-    <p class="sub">Know the Shore. Know the State.</p>
+    <p class="eyebrow">GARDEN STATE · DAILY EXIT CHALLENGE</p>
+    <h1>Garden State Guess</h1>
+    <p class="sub">Five towns. One Garden State. Find your exit.</p>
   </div>
 </header>
 <div id="land" class="card">
   <p style="margin:0 0 4px"><b id="pn"></b></p>
-  <p class="ff">Place 5 towns on an unlabeled aerial map of New Jersey. Closer pins earn more points — 1,000 possible. New puzzle every day.</p>
-  <button id="go">Place the pin</button>
+  <p class="ff">Your daily New Jersey road trip: find 5 towns on the map. The closer your pins, the more points you earn — 1,000 possible. New route every day.</p>
+  <button id="go">Start your trip</button>
   <p class="ff" id="streakL" style="text-align:center;margin-top:10px"></p>
 </div>
 <div id="game" class="hide">
@@ -77,7 +77,7 @@ button:disabled{opacity:.4;cursor:default}
       <div id="map" aria-label="Unlabeled aerial map of New Jersey"></div>
       <button id="act" class="map-action" disabled>Drop a pin to continue</button>
     </div>
-    <p class="map-help">Tap anywhere inside New Jersey to place your pin. Zoom and drag to explore.</p>
+    <p class="map-help">Drop your pin anywhere inside the Garden State. Zoom and drag to scout your route.</p>
     <div id="info" class="fact"></div>
   </div>
 </div>
@@ -167,7 +167,7 @@ let puz=puzzleForDay(num);
 const yesterdayPuzzle=puzzleForDay(num-1);
 let S={};try{S=JSON.parse(localStorage.getItem("ks-nj")||"{}")}catch(e){}
 const save=()=>{try{localStorage.setItem("ks-nj",JSON.stringify(S))}catch(e){}};
-$("pn").textContent="New Jersey · Puzzle #"+num+" · "+ny;
+$("pn").textContent="GARDEN STATE · DAILY ROUTE #"+num+" · "+ny;
 $("streakL").textContent=S.streak?"🔥 "+S.streak+"-day streak":"";
 function hav(a,b,c,d){const rad=Math.PI/180,x=Math.sin((c-a)*rad/2)**2+Math.cos(a*rad)*Math.cos(c*rad)*Math.sin((d-b)*rad/2)**2;return 12742*Math.asin(Math.sqrt(x))}
 let r=0,pin=null,res=[],done=false,map=null,gameLayer=null,njLayer=null,njGeometry=null,mapReady=null,boundaryReady=null,countyLayer=null,countyFeatures=null;
@@ -285,7 +285,7 @@ function round(){
 }
 $("go").onclick=async()=>{
   $("go").disabled=true;
-  $("go").textContent="Loading aerial map…";
+  $("go").textContent="Loading your route…";
   $("land").classList.add("hide");$("game").classList.remove("hide");
   try{await Promise.all([censusReady,initMap()]);round();}
   catch(e){$("game").classList.add("hide");$("land").classList.remove("hide");$("go").disabled=false;$("go").textContent="Try loading the map again";}
@@ -351,7 +351,7 @@ function show(tot,rs){
   const roundDifficulty=["Easy","Easy","Medium","Hard","Hard"];
   $("rows").innerHTML=puz.map((t,i)=>"<div class='row'><span>"+t.n+" <small class='round-tag'>("+roundDifficulty[i]+" "+MULT[i]+"×)</small></span><b>"+rs[i].b+" "+(rs[i].w??rs[i].p)+"/100</b></div><p class='ff'>"+(t.f||"New Jersey place; coordinates from the 2024 U.S. Census Gazetteer.")+"</p>").join("");
   loadDailyAverage();
-  window._share="Jersey Jolt #"+num+" — "+tot+"/1000 🔥 "+S.streak+"\n"+rs.map(x=>x.b+(x.w??x.p)).join(" · ")+"\nhttps://pinnsylvania.win/new-jersey";
+  window._share="Garden State Guess #"+num+" — "+tot+"/1000 🔥 "+S.streak+"\n"+rs.map(x=>x.b+(x.w??x.p)).join(" · ")+"\nhttps://pinnsylvania.win/new-jersey";
   const tick=()=>{const now=new Date(),midnight=new Date(now);midnight.setHours(24,0,0,0);const seconds=Math.floor((midnight-now)/1000);$("cd").textContent="Next puzzle in "+Math.floor(seconds/3600)+"h "+Math.floor(seconds%3600/60)+"m"};
   tick();setInterval(tick,3e4);
 }
