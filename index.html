@@ -218,6 +218,7 @@ function revealCounty(town){
   if(!feature)return "";
   countyLayer=L.geoJSON(feature,{interactive:false,style:{color:"#f2c75c",weight:4,opacity:1,fillColor:"#f2c75c",fillOpacity:.2}}).addTo(map);
   countyLayer.bringToFront();
+  if(gameLayer)gameLayer.bringToFront();
   if(paLayer)paLayer.bringToFront();
   return feature.properties?.NAME||feature.properties?.BASENAME||"";
 }
