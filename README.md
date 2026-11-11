@@ -2,7 +2,13 @@
 
 **Play:** https://pinnsylvania.win/
 
+**New Jersey game:** https://pinnsylvania.win/new-jersey
+
 A static daily Pennsylvania town-guessing game. The site is a single `index.html` file; no build step is required.
+
+## New Jersey game
+
+The `/new-jersey` route serves a separate New Jersey version of the daily game. It uses New Jersey Census place/population data, the New Jersey state boundary, and New Jersey county geometries. Its local streak and puzzle state are stored separately, and the Worker keeps New Jersey daily score averages separate from Pennsylvania scores.
 
 ## Map implementation
 
