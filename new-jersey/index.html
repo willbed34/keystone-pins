@@ -137,14 +137,14 @@ const censusReady=(async()=>{
     if(records.length<400)throw new Error("Incomplete New Jersey Gazetteer: "+records.length+" records");
     const parsed=records.map(row=>{
       const rawName=row[3]||"";
-      const match=rawName.match(/^(.*)\s+(city|borough|CDP|town|municipality)$/i);
+      const match=rawName.match(/^(.*)\s+(city|borough|CDP|town|township|village|municipality)$/i);
       const name=(match?match[1]:rawName).trim();
       const type=match?match[2].toLowerCase():"place";
       const lat=Number(row[10]),lon=Number(row[11]),area=Number(row[8]),water=Number(row[9]);
       return {n:name,type,geoid:row[1],lat,lon,area:Number.isFinite(area)?area:0,water:Number.isFinite(water)?water:0};
     }).map(t=>({...t,population:populations.get(t.geoid)||0}));
     const included=parsed.filter(t=>{
-      const incorporated=["city","borough","town","municipality"].includes(t.type);
+      const incorporated=["city","borough","town","township","village","municipality"].includes(t.type);
       return incorporated||(t.type==="cdp"&&(t.n==="Hershey"||t.population>=5000));
     }).filter(t=>t.n&&Number.isFinite(t.lat)&&Number.isFinite(t.lon)&&t.lat>38.8&&t.lat<41.5&&t.lon>-75.6&&t.lon<-73.8);
     const counts={};included.forEach(t=>counts[t.n]=(counts[t.n]||0)+1);
