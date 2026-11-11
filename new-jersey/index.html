@@ -8,7 +8,7 @@
 <link rel="canonical" href="https://pinnsylvania.win/new-jersey">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M18 2H46L43 12 52 19 44 30 49 43 37 61 25 55 18 42 12 28 15 15Z' fill='%23173b70' stroke='%23d6a329' stroke-width='3'/%3E%3Ctext x='32' y='39' text-anchor='middle' font-family='Arial,sans-serif' font-size='19' font-weight='800' fill='%23f2c75c'%3ENJ%3C/text%3E%3C/svg%3E">
 <meta property="og:type" content="website">
-<meta property="og:title" content="New Jerseypins — Daily NJ Town Game">
+<meta property="og:title" content="New Jersey Pins — Daily NJ Town Game">
 <meta property="og:description" content="How well do you actually know NJ? Place five towns on an unlabeled aerial map.">
 <meta property="og:url" content="https://pinnsylvania.win/new-jersey">
 <meta name="twitter:card" content="summary">
@@ -134,7 +134,7 @@ const censusReady=(async()=>{
       popRows.slice(1).forEach(row=>populations.set("34"+row[3],Number(row[1])||0));
     }catch(popError){console.warn("2020 population data unavailable; excluding all CDPs except Hershey:",popError);}
     const records=lines.slice(1).map(line=>line.split("\t")).filter(row=>row.length>=12&&row[0]==="NJ");
-    if(records.length<1900)throw new Error("Incomplete Pennsylvania Gazetteer: "+records.length+" records");
+    if(records.length<400)throw new Error("Incomplete New Jersey Gazetteer: "+records.length+" records");
     const parsed=records.map(row=>{
       const rawName=row[3]||"";
       const match=rawName.match(/^(.*)\s+(city|borough|CDP|town|municipality)$/i);
@@ -156,7 +156,7 @@ const censusReady=(async()=>{
       const fact=KNOWN_FACTS[t.n]||("📍 Census geography fact: "+t.n+" is a New Jersey "+t.type+" covering "+land+" square miles of land"+(t.water>0.005?" and "+water+" square miles of water.":"."));
       return {...t,n,f:fact};
     });
-    console.info("Loaded "+PZ.length+" Pennsylvania places (incorporated places plus CDPs with 5,000+ residents and Hershey).");
+    console.info("Loaded "+PZ.length+" New Jersey places (incorporated places plus CDPs with 5,000+ residents and Hershey).");
   }catch(error){
     console.warn("Using built-in town bank; Census place download failed:",error);
   }
