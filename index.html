@@ -314,7 +314,8 @@ $("act").onclick=()=>{
   const countyName=revealCounty(t);
   $("info").innerHTML="<b>"+BAND(d)+" "+Math.round(d)+" km off · +"+raw+"/100"+(MULT[r]>1?" (×"+MULT[r]+" = "+pts+" pts)":" pts")+"</b><br>"+(t.f||"Pennsylvania place; coordinates from the 2024 U.S. Census Gazetteer.")+(countyName?"<div class='county-note'>📍 "+countyName+" County highlighted on the map</div>":"");
   $("sc").textContent="Score: "+res.reduce((s,x)=>s+x.p,0);
-  $("act").textContent=r<4?"Next town →":"See results";
+  $("act").disabled=false;
+  $("act").textContent=r<4?"Next round →":"See results";
 };
 async function finish(){
   const tot=res.reduce((s,x)=>s+x.p,0);
