@@ -3,24 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#f6f3ec">
-<meta name="description" content="A daily Pennsylvania town-guessing game. Place five towns on an unlabeled aerial map and see how well you know PA.">
+<meta name="theme-color" content="#e9f3f2">
+<meta name="description" content="A daily New Jersey map game. Drop pins on five Garden State towns and test how well you know the state.">
 <link rel="canonical" href="https://pinnsylvania.win/new-jersey">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M18 2H46L43 12 52 19 44 30 49 43 37 61 25 55 18 42 12 28 15 15Z' fill='%23173b70' stroke='%23d6a329' stroke-width='3'/%3E%3Ctext x='32' y='39' text-anchor='middle' font-family='Arial,sans-serif' font-size='19' font-weight='800' fill='%23f2c75c'%3ENJ%3C/text%3E%3C/svg%3E">
 <meta property="og:type" content="website">
-<meta property="og:title" content="New Jersey Pins — Daily NJ Town Game">
-<meta property="og:description" content="How well do you actually know NJ? Place five towns on an unlabeled aerial map.">
+<meta property="og:title" content="Jersey Jolt — Daily New Jersey Map Game">
+<meta property="og:description" content="Drop pins across the Garden State in five daily rounds. How well do you know New Jersey?">
 <meta property="og:url" content="https://pinnsylvania.win/new-jersey">
 <meta name="twitter:card" content="summary">
 <title>New Jersey Pins — Daily NJ Town Game</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
 <style>
-:root{--bg:#f4f0e6;--card:#fffdf8;--ink:#172b4d;--mute:#687386;--navy:#173b70;--gold:#d6a329;--ok:#2f8f4e;--bad:#c0392b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101722;--card:#1a2638;--ink:#edf2fa;--mute:#a3afc1;--navy:#8eafe2;--gold:#e4b84f;--ok:#5fcf84;--bad:#ff7b6b;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#101722;--card:#1a2638;--ink:#edf2fa;--mute:#a3afc1;--navy:#8eafe2;--gold:#e4b84f;--ok:#5fcf84;--bad:#ff7b6b;color-scheme:dark}
+:root{--bg:#e9f3f2;--card:#fbfffe;--ink:#12313b;--mute:#617a80;--navy:#123d4a;--gold:#ff765e;--ok:#218b78;--bad:#c04d4d;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101d22;--card:#192d33;--ink:#edf8f6;--mute:#a5bfbd;--navy:#70c8b6;--gold:#ff947e;--ok:#62d0b0;--bad:#ff8b82;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#101d22;--card:#192d33;--ink:#edf8f6;--mute:#a5bfbd;--navy:#70c8b6;--gold:#ff947e;--ok:#62d0b0;--bad:#ff8b82;color-scheme:dark}
 *{box-sizing:border-box}html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font-family:Georgia,'Times New Roman',serif;min-height:100%}
-.top-rule{height:6px;background:linear-gradient(90deg,#173b70 0 47%,#d6a329 47% 53%,#173b70 53% 100%)}
+body{background:var(--bg);color:var(--ink);font-family:ui-rounded,'Avenir Next',system-ui,sans-serif;min-height:100%}
+.top-rule{height:7px;background:linear-gradient(90deg,#123d4a 0 38%,#7ed3c2 38% 62%,#ff765e 62% 82%,#ffbd72 82% 100%)}
 main{max-width:760px;margin:0 auto;padding:14px}
 .brand{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;margin:14px 0 22px}
 .keystone-mark{width:62px;height:62px;display:grid;place-items:center;flex:none;filter:drop-shadow(0 3px 3px #0002)}
@@ -28,8 +28,8 @@ main{max-width:760px;margin:0 auto;padding:14px}
 .eyebrow{font:700 .7rem system-ui,sans-serif;letter-spacing:2px;color:var(--gold);margin:0 0 4px}
 h1{font-size:clamp(2rem,5vw,2.45rem);margin:0;color:var(--navy);letter-spacing:.2px;line-height:1.08}
 .sub{color:var(--mute);font-style:italic;margin:5px 0 0;font-size:1.08rem}
-.card{background:var(--card);border:1px solid #173b7020;border-top:3px solid var(--gold);border-radius:14px;padding:14px;box-shadow:0 2px 8px #172b4d0d;margin-bottom:12px}
-button{font:inherit;font-weight:700;border:1px solid #102d57;border-radius:10px;padding:12px 18px;background:var(--navy);color:#fff;cursor:pointer;width:100%;font-size:1rem;transition:filter .15s,transform .15s}
+.card{background:var(--card);border:1px solid #123d4a20;border-top:3px solid var(--gold);border-radius:16px;padding:14px;box-shadow:0 5px 18px #123d4a10;margin-bottom:12px}
+button{font:inherit;font-weight:700;border:1px solid #0d303a;border-radius:999px;padding:12px 18px;background:var(--navy);color:#fff;cursor:pointer;width:100%;font-size:1rem;transition:filter .15s,transform .15s}
 button:not(:disabled):hover{filter:brightness(1.12)}
 button:not(:disabled):active{transform:translateY(1px)}
 button:disabled{opacity:.4;cursor:default}
@@ -42,7 +42,7 @@ button:disabled{opacity:.4;cursor:default}
 .county-note{font-weight:700;color:var(--gold);margin-top:6px}
 .leaflet-container{font-family:system-ui,sans-serif;touch-action:pan-x pan-y}
 .leaflet-control-attribution{font-size:10px!important}
-.leaflet-control-zoom a{color:#173b70!important}
+.leaflet-control-zoom a{color:#123d4a!important}
 .map-help{font: .82rem system-ui,sans-serif;color:var(--mute);text-align:center;margin:8px 0 0}
 .fact{margin:10px 0;line-height:1.45}
 .row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #8883;font-family:system-ui,sans-serif;font-size:.95rem}.round-tag{font-size:.76em;font-weight:600;color:var(--mute);white-space:nowrap;margin-left:3px}
@@ -58,9 +58,9 @@ button:disabled{opacity:.4;cursor:default}
 <header class="brand">
   <div class="keystone-mark" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M16 3H48L42 16H63L48 61H16L1 16H22Z" fill="var(--navy)" stroke="var(--gold)" stroke-width="2.5" stroke-linejoin="round"/><path d="M18 7H46L40 18H59L46 57H18L5 18H24Z" fill="none" stroke="#ffffff" stroke-opacity=".24" stroke-width="1.2"/><text x="32" y="39" text-anchor="middle" fill="#f2c75c" font-family="system-ui,sans-serif" font-size="19" font-weight="850" letter-spacing="1">NJ</text></svg></div>
   <div>
-    <p class="eyebrow">THE GARDEN STATE · DAILY TOWN CHALLENGE</p>
-    <h1>New Jerseypins</h1>
-    <p class="sub">How well do you actually know PA?</p>
+    <p class="eyebrow">THE GARDEN STATE · DAILY MAP CHALLENGE</p>
+    <h1>Jersey Jolt</h1>
+    <p class="sub">Know the Shore. Know the State.</p>
   </div>
 </header>
 <div id="land" class="card">
@@ -77,7 +77,7 @@ button:disabled{opacity:.4;cursor:default}
       <div id="map" aria-label="Unlabeled aerial map of New Jersey"></div>
       <button id="act" class="map-action" disabled>Drop a pin to continue</button>
     </div>
-    <p class="map-help">Tap anywhere inside Pennsylvania to place your pin. Zoom and drag to explore.</p>
+    <p class="map-help">Tap anywhere inside New Jersey to place your pin. Zoom and drag to explore.</p>
     <div id="info" class="fact"></div>
   </div>
 </div>
@@ -99,7 +99,7 @@ const ny=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York"}).format(n
 const num=Math.round((Date.UTC(...ny.split("-").map((v,i)=>i===1?v-1:+v))-Date.UTC(2026,10,10))/864e5)+1;
 // Retain hand-researched local trivia for towns already in the original pool.
 const KNOWN_FACTS=Object.fromEntries(PZ.flat().filter(t=>t.f).map(t=>[t.n,t.f]));
-// Load the complete 2024 Census Pennsylvania places file (2,002 incorporated places
+// Load the complete 2024 Census New Jersey places file (2,002 incorporated places
 // and census-designated places), not just InstaMaps' 600-place display subset.
 const CENSUS_PLACES_URL="https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2024_Gazetteer/2024_gaz_place_34.txt";
 function puzzleForDay(dayNumber){
@@ -132,7 +132,7 @@ const censusReady=(async()=>{
       if(!popResponse.ok)throw new Error("2020 Census population API returned "+popResponse.status);
       const popRows=await popResponse.json();
       popRows.slice(1).forEach(row=>populations.set("34"+row[3],Number(row[1])||0));
-    }catch(popError){console.warn("2020 population data unavailable; excluding all CDPs except Hershey:",popError);}
+    }catch(popError){console.warn("2020 population data unavailable; excluding CDPs:",popError);}
     const records=lines.slice(1).map(line=>line.split("\t")).filter(row=>row.length>=12&&row[0]==="NJ");
     if(records.length<400)throw new Error("Incomplete New Jersey Gazetteer: "+records.length+" records");
     const parsed=records.map(row=>{
@@ -145,7 +145,7 @@ const censusReady=(async()=>{
     }).map(t=>({...t,population:populations.get(t.geoid)||0}));
     const included=parsed.filter(t=>{
       const incorporated=["city","borough","town","township","village","municipality"].includes(t.type);
-      return incorporated||(t.type==="cdp"&&(t.n==="Hershey"||t.population>=5000));
+      return incorporated||(t.type==="cdp"&&t.population>=5000);
     }).filter(t=>t.n&&Number.isFinite(t.lat)&&Number.isFinite(t.lon)&&t.lat>38.8&&t.lat<41.5&&t.lon>-75.6&&t.lon<-73.8);
     const counts={};included.forEach(t=>counts[t.n]=(counts[t.n]||0)+1);
     const typeCounts={};included.forEach(t=>{const key=t.n+"|"+t.type;typeCounts[key]=(typeCounts[key]||0)+1});
@@ -171,7 +171,7 @@ const save=()=>{try{localStorage.setItem("ks-nj",JSON.stringify(S))}catch(e){}};
 $("pn").textContent="New Jersey · Puzzle #"+num+" · "+ny;
 $("streakL").textContent=S.streak?"🔥 "+S.streak+"-day streak":"";
 function hav(a,b,c,d){const rad=Math.PI/180,x=Math.sin((c-a)*rad/2)**2+Math.cos(a*rad)*Math.cos(c*rad)*Math.sin((d-b)*rad/2)**2;return 12742*Math.asin(Math.sqrt(x))}
-let r=0,pin=null,res=[],done=false,map=null,gameLayer=null,paLayer=null,paGeometry=null,mapReady=null,countyLayer=null,countyFeatures=[];
+let r=0,pin=null,res=[],done=false,map=null,gameLayer=null,njLayer=null,njGeometry=null,mapReady=null,boundaryReady=null,countyLayer=null,countyFeatures=null;
 
 // The base layer is imagery only. Do NOT add a labels, roads, boundaries,
 // or "reference" overlay tile layer. The only linework added is PA's outline.
@@ -192,95 +192,90 @@ function pointInGeometry(latlng,geometry){
   const polygons=geometry.type==="Polygon"?[geometry.coordinates]:geometry.type==="MultiPolygon"?geometry.coordinates:[];
   return polygons.some(poly=>pointInRing(latlng,poly[0])&&!poly.slice(1).some(hole=>pointInRing(latlng,hole)));
 }
-function pointInPA(latlng){return pointInGeometry(latlng,paGeometry)}
+function pointInNJ(latlng){return pointInGeometry(latlng,njGeometry)}
 function countyForTown(town){
   const point={lat:town.lat,lng:town.lon};
   return countyFeatures.find(feature=>pointInGeometry(point,feature.geometry))||null;
 }
-function revealCounty(town){
+async function revealCounty(town){
   if(countyLayer){map.removeLayer(countyLayer);countyLayer=null;}
+  try{
+    if(!countyFeatures){
+      const response=await fetch(COUNTY_URL,{cache:"force-cache"});
+      if(!response.ok)throw new Error("County boundary service returned "+response.status);
+      const data=await response.json();
+      countyFeatures=data.features||[];
+      if(!countyFeatures.length)throw new Error("No New Jersey county boundaries returned");
+    }
+  }catch(error){console.warn("County outlines unavailable:",error);countyFeatures=[];return "";}
   const feature=countyForTown(town);
   if(!feature)return "";
-  countyLayer=L.geoJSON(feature,{interactive:false,style:{color:"#f2c75c",weight:4,opacity:0,fillColor:"#f2c75c",fillOpacity:0}}).addTo(map);
+  const layer=L.geoJSON(feature,{interactive:false,style:{color:"#ff765e",weight:4,opacity:0,fillColor:"#ff765e",fillOpacity:0}}).addTo(map);
+  countyLayer=layer;
   const fadeStart=performance.now(),fadeDuration=1100;
   const fade=now=>{
-    if(!countyLayer)return;
+    if(countyLayer!==layer)return;
     const progress=Math.min(1,(now-fadeStart)/fadeDuration);
     const eased=1-Math.pow(1-progress,3);
-    countyLayer.setStyle({opacity:eased,fillOpacity:.22*eased});
+    layer.setStyle({opacity:eased,fillOpacity:.22*eased});
     if(progress<1)requestAnimationFrame(fade);
   };
   requestAnimationFrame(fade);
-  countyLayer.bringToFront();
+  layer.bringToFront();
   if(gameLayer)gameLayer.bringToFront();
-  if(paLayer)paLayer.bringToFront();
+  if(njLayer)njLayer.bringToFront();
   return feature.properties?.NAME||feature.properties?.BASENAME||"";
 }
 async function initMap(){
   if(map){requestAnimationFrame(()=>map.invalidateSize());return;}
   if(mapReady)return mapReady;
-  mapReady=(async()=>{
-    map=L.map("map",{
-      zoomControl:true,scrollWheelZoom:true,doubleClickZoom:true,
-      touchZoom:true,dragging:true,boxZoom:false,keyboard:true,
-      minZoom:6,maxZoom:14,zoomSnap:0.5
-    });
-    L.tileLayer("https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{
-      maxZoom:14,maxNativeZoom:14,
-      attribution:"Imagery © Esri, Maxar, Earthstar Geographics"
-    }).addTo(map);
-
-    try{
-      const response=await fetch(STATE_BOUNDARY_URL);
-      if(!response.ok)throw new Error("Boundary service returned "+response.status);
-      const allStates=await response.json();
-      const paFeature=allStates.features?.find(feature=>feature.properties?.name==="New Jersey");
-      if(!paFeature)throw new Error("Pennsylvania boundary was not found in the GeoJSON");
-      paGeometry=paFeature.geometry;
-      paLayer=L.geoJSON(paFeature,{
-        interactive:false,
-        style:{color:"#ffffff",weight:3,opacity:1,fill:false}
-      }).addTo(map);
-      try{
-        const countyResponse=await fetch(COUNTY_URL);
-        if(!countyResponse.ok)throw new Error("County boundary service returned "+countyResponse.status);
-        const countyData=await countyResponse.json();
-        countyFeatures=countyData.features||[];
-        if(!countyFeatures.length)throw new Error("No Pennsylvania county boundaries returned");
-      }catch(countyError){
-        console.warn("County outlines unavailable:",countyError);
-        countyFeatures=[];
-      }
-      const bounds=paLayer.getBounds();
-      map.fitBounds(bounds,{padding:[12,12]});
-      map.setMaxBounds(bounds.pad(0.18));
-      map.on("click",e=>{
-        if(done)return;
-        if(!pointInPA(e.latlng)){
-          $("info").textContent="Keep your pin inside New Jersey.";
-          return;
-        }
-        pin=e.latlng;
-        gameLayer.clearLayers();
-        L.circleMarker(pin,{radius:6,color:"#fff",weight:2,fillColor:"#c0392b",fillOpacity:1}).addTo(gameLayer);
-        $("info").textContent="";
-        $("act").disabled=false;
-        $("act").textContent="Confirm guess";
-      });
-    }catch(error){
-      console.error("Could not load Pennsylvania boundary:",error);
-      $("info").textContent="The New Jersey outline could not load. Please refresh the page and try again.";
-      throw error;
+  map=L.map("map",{
+    zoomControl:true,scrollWheelZoom:true,doubleClickZoom:true,
+    touchZoom:true,dragging:true,boxZoom:false,keyboard:true,
+    minZoom:6,maxZoom:14,zoomSnap:0.5
+  }).setView([40.12,-74.55],7);
+  L.tileLayer("https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{
+    maxZoom:14,maxNativeZoom:14,keepBuffer:3,
+    attribution:"Imagery © Esri, Maxar, Earthstar Geographics"
+  }).addTo(map);
+  gameLayer=L.layerGroup().addTo(map);
+  map.on("click",e=>{
+    if(done)return;
+    if(!njGeometry){$("info").textContent="Loading the New Jersey boundary…";return;}
+    if(!pointInNJ(e.latlng)){
+      $("info").textContent="Keep your pin inside New Jersey.";
+      return;
     }
-    gameLayer=L.layerGroup().addTo(map);
-    requestAnimationFrame(()=>map.invalidateSize());
-  })().catch(error=>{mapReady=null;throw error;});
+    pin=e.latlng;
+    gameLayer.clearLayers();
+    L.circleMarker(pin,{radius:6,color:"#fff",weight:2,fillColor:"#ff765e",fillOpacity:1}).addTo(gameLayer);
+    $("info").textContent="";
+    $("act").disabled=false;
+    $("act").textContent="Confirm guess";
+  });
+  requestAnimationFrame(()=>map.invalidateSize());
+  mapReady=Promise.resolve();
+  boundaryReady=(async()=>{
+    const response=await fetch(STATE_BOUNDARY_URL,{cache:"force-cache"});
+    if(!response.ok)throw new Error("State boundary service returned "+response.status);
+    const data=await response.json();
+    const njFeature=data.features?.find(feature=>feature.properties?.name==="New Jersey");
+    if(!njFeature)throw new Error("New Jersey boundary was not found");
+    njGeometry=njFeature.geometry;
+    njLayer=L.geoJSON(njFeature,{interactive:false,style:{color:"#ffffff",weight:3,opacity:1,fill:false}}).addTo(map);
+    const bounds=njLayer.getBounds();
+    map.fitBounds(bounds,{padding:[12,12],animate:false});
+    map.setMaxBounds(bounds.pad(0.18));
+  })().catch(error=>{
+    console.warn("New Jersey outline unavailable:",error);
+    $("info").textContent="The New Jersey boundary is still loading. Please try again in a moment.";
+  });
   return mapReady;
 }
 function resetMapView(){
-  if(!map||!paLayer)return;
+  if(!map||!njLayer)return;
   map.invalidateSize({pan:false});
-  map.fitBounds(paLayer.getBounds(),{padding:[12,12],animate:false});
+  map.fitBounds(njLayer.getBounds(),{padding:[12,12],animate:false});
 }
 function round(){
   const t=puz[r];pin=null;done=false;gameLayer.clearLayers();$("info").textContent="";
@@ -294,10 +289,10 @@ $("go").onclick=async()=>{
   $("go").disabled=true;
   $("go").textContent="Loading aerial map…";
   $("land").classList.add("hide");$("game").classList.remove("hide");
-  try{await censusReady;await initMap();round();}
+  try{await Promise.all([censusReady,initMap()]);round();}
   catch(e){$("game").classList.add("hide");$("land").classList.remove("hide");$("go").disabled=false;$("go").textContent="Try loading the map again";}
 };
-$("act").onclick=()=>{
+$("act").onclick=async()=>{
   if(done){r++;if(r<5)round();else finish();return;}
   if(!pin)return;
   const t=puz[r],glat=pin.lat,glon=pin.lng,d=hav(glat,glon,t.lat,t.lon);
@@ -305,8 +300,8 @@ $("act").onclick=()=>{
   res.push({p:pts,w:raw,d,b:BAND(d)});done=true;
   L.polyline([pin,[t.lat,t.lon]],{color:"#fff",weight:2,dashArray:"5, 6",opacity:.95}).addTo(gameLayer);
   L.circleMarker([t.lat,t.lon],{radius:7,color:"#fff",weight:2,fillColor:"#2f8f4e",fillOpacity:1}).addTo(gameLayer);
-  const countyName=revealCounty(t);
-  $("info").innerHTML="<b>"+BAND(d)+" "+Math.round(d)+" km off · +"+raw+"/100"+(MULT[r]>1?" (×"+MULT[r]+" = "+pts+" pts)":" pts")+"</b><br>"+(t.f||"Pennsylvania place; coordinates from the 2024 U.S. Census Gazetteer.")+(countyName?"<div class='county-note'>📍 "+countyName+" County highlighted on the map</div>":"");
+  const countyName=await revealCounty(t);
+  $("info").innerHTML="<b>"+BAND(d)+" "+Math.round(d)+" km off · +"+raw+"/100"+(MULT[r]>1?" (×"+MULT[r]+" = "+pts+" pts)":" pts")+"</b><br>"+(t.f||"New Jersey place; coordinates from the 2024 U.S. Census Gazetteer.")+(countyName?"<div class='county-note'>📍 "+countyName+" County highlighted on the map</div>":"");
   $("sc").textContent="Score: "+res.reduce((s,x)=>s+x.p,0);
   $("act").disabled=false;
   $("act").textContent=r<4?"Next round →":"See results";
@@ -354,9 +349,9 @@ function show(tot,rs){
   $("land").classList.add("hide");$("game").classList.add("hide");$("recap").classList.remove("hide");
   $("tot").textContent=tot+" / 1000";$("strk").textContent="🔥 "+S.streak+"-day streak";
   const roundDifficulty=["Easy","Easy","Medium","Hard","Hard"];
-  $("rows").innerHTML=puz.map((t,i)=>"<div class='row'><span>"+t.n+" <small class='round-tag'>("+roundDifficulty[i]+" "+MULT[i]+"×)</small></span><b>"+rs[i].b+" "+(rs[i].w??rs[i].p)+"/100</b></div><p class='ff'>"+(t.f||"Pennsylvania place; coordinates from the 2024 U.S. Census Gazetteer.")+"</p>").join("");
+  $("rows").innerHTML=puz.map((t,i)=>"<div class='row'><span>"+t.n+" <small class='round-tag'>("+roundDifficulty[i]+" "+MULT[i]+"×)</small></span><b>"+rs[i].b+" "+(rs[i].w??rs[i].p)+"/100</b></div><p class='ff'>"+(t.f||"New Jersey place; coordinates from the 2024 U.S. Census Gazetteer.")+"</p>").join("");
   loadDailyAverage();
-  window._share="New Jerseypins #"+num+" — "+tot+"/1000 🔥 "+S.streak+"\n"+rs.map(x=>x.b+(x.w??x.p)).join(" · ")+"\nhttps://pinnsylvania.win/new-jersey";
+  window._share="Jersey Jolt #"+num+" — "+tot+"/1000 🔥 "+S.streak+"\n"+rs.map(x=>x.b+(x.w??x.p)).join(" · ")+"\nhttps://pinnsylvania.win/new-jersey";
   const tick=()=>{const now=new Date(),midnight=new Date(now);midnight.setHours(24,0,0,0);const seconds=Math.floor((midnight-now)/1000);$("cd").textContent="Next puzzle in "+Math.floor(seconds/3600)+"h "+Math.floor(seconds%3600/60)+"m"};
   tick();setInterval(tick,3e4);
 }
