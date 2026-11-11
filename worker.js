@@ -8,8 +8,11 @@ export default {
     if (request.method === "OPTIONS") return new Response(null,{status:204,headers:cors});
     if (url.pathname === "/api/daily-average" && request.method === "GET") {
       const day = url.searchParams.get("day");
+      const game = url.searchParams.get("game") === "nj" ? "nj" : "pa";
       if (!/^\d{4}-\d{2}-\d{2}$/.test(day || "")) return json({error:"Invalid day"},400);
-      const row = await env.DB.prepare("SELECT COUNT(*) AS count, COALESCE(AVG(score), 0) AS average FROM daily_scores WHERE day = ?").bind(day).first();
+      const row = game === "nj"
+        ? await env.DB.prepare("SELECT COUNT(*) AS count, COALESCE(AVG(score), 0) AS average FROM daily_scores WHERE day = ? AND player_id LIKE 'nj-%'").bind(day).first()
+        : await env.DB.prepare("SELECT COUNT(*) AS count, COALESCE(AVG(score), 0) AS average FROM daily_scores WHERE day = ? AND player_id NOT LIKE 'nj-%'").bind(day).first();
       return json({day,count:row.count,average:Math.round(row.average*100)/100});
     }
     if (url.pathname === "/api/score" && request.method === "POST") {
@@ -20,7 +23,9 @@ export default {
       const today = new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York"}).format(new Date());
       if (day !== today) return json({error:"Scores can only be submitted for today"},400);
       await env.DB.prepare("INSERT OR IGNORE INTO daily_scores (day, player_id, score, created_at) VALUES (?, ?, ?, datetime('now'))").bind(day,playerId,score).run();
-      const row = await env.DB.prepare("SELECT COUNT(*) AS count, COALESCE(AVG(score), 0) AS average FROM daily_scores WHERE day = ?").bind(day).first();
+      const row = playerId.startsWith("nj-")
+        ? await env.DB.prepare("SELECT COUNT(*) AS count, COALESCE(AVG(score), 0) AS average FROM daily_scores WHERE day = ? AND player_id LIKE 'nj-%'").bind(day).first()
+        : await env.DB.prepare("SELECT COUNT(*) AS count, COALESCE(AVG(score), 0) AS average FROM daily_scores WHERE day = ? AND player_id NOT LIKE 'nj-%'").bind(day).first();
       return json({day,count:row.count,average:Math.round(row.average*100)/100});
     }
     if (url.pathname.startsWith("/api/")) return json({error:"Not found"},404);
