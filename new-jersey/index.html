@@ -6,13 +6,13 @@
 <meta name="theme-color" content="#e9f3f2">
 <meta name="description" content="A daily New Jersey map game. Drop pins on five Garden State towns and test how well you know the state.">
 <link rel="canonical" href="https://pinnsylvania.win/new-jersey">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M18 2H46L43 12 52 19 44 30 49 43 37 61 25 55 18 42 12 28 15 15Z' fill='%23173b70' stroke='%23d6a329' stroke-width='3'/%3E%3Ctext x='32' y='39' text-anchor='middle' font-family='Arial,sans-serif' font-size='19' font-weight='800' fill='%23f2c75c'%3ENJ%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='29' fill='%23123d4a' stroke='%23ff765e' stroke-width='3'/%3E%3Ccircle cx='32' cy='23' r='10' fill='%23ffbd72'/%3E%3Cpath d='M9 38Q20 31 32 38T55 38M9 47Q20 40 32 47T55 47' fill='none' stroke='%237ed3c2' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Jersey Jolt — Daily New Jersey Map Game">
 <meta property="og:description" content="Drop pins across the Garden State in five daily rounds. How well do you know New Jersey?">
 <meta property="og:url" content="https://pinnsylvania.win/new-jersey">
 <meta name="twitter:card" content="summary">
-<title>New Jersey Pins — Daily NJ Town Game</title>
+<title>Jersey Jolt — Daily New Jersey Map Game</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
 <style>
 :root{--bg:#e9f3f2;--card:#fbfffe;--ink:#12313b;--mute:#617a80;--navy:#123d4a;--gold:#ff765e;--ok:#218b78;--bad:#c04d4d;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -35,7 +35,7 @@ button:not(:disabled):active{transform:translateY(1px)}
 button:disabled{opacity:.4;cursor:default}
 .hud{display:flex;justify-content:space-between;gap:12px;font-family:system-ui,sans-serif;font-size:.9rem;color:var(--mute);margin-bottom:6px}
 .town{font-size:1.6rem;font-weight:700;text-align:center;margin:4px 0 8px;color:var(--navy)}
-#map{width:100%;height:min(66vh,560px);min-height:360px;border-radius:10px;overflow:hidden;background:#d9e0e5;z-index:1;border:2px solid #173b7022}
+#map{width:100%;height:min(66vh,560px);min-height:360px;border-radius:10px;overflow:hidden;background:#d9e0e5;z-index:1;border:2px solid #123d4a22}
 .map-wrap{position:relative}
 .map-action{position:absolute;z-index:500;left:12px;right:12px;bottom:12px;width:calc(100% - 24px);box-shadow:0 3px 12px #07142688;border:1px solid #ffffff55;background:var(--navy);min-height:48px}
 .map-action:disabled{opacity:.88;background:#344b6a;color:#e3eaf4;border-color:#ffffff33}
@@ -99,8 +99,7 @@ const ny=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York"}).format(n
 const num=Math.round((Date.UTC(...ny.split("-").map((v,i)=>i===1?v-1:+v))-Date.UTC(2026,10,10))/864e5)+1;
 // Retain hand-researched local trivia for towns already in the original pool.
 const KNOWN_FACTS=Object.fromEntries(PZ.flat().filter(t=>t.f).map(t=>[t.n,t.f]));
-// Load the 2024 Census Gazetteer for New Jersey, then filter the list to useful communities
-// and census-designated places), not just InstaMaps' 600-place display subset.
+// Load the 2024 Census Gazetteer for New Jersey and filter it to useful communities.
 const CENSUS_PLACES_URL="https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2024_Gazetteer/2024_gaz_place_34.txt";
 function puzzleForDay(dayNumber){
   let seed=(Math.imul(dayNumber,0x9e3779b1)^0x85ebca6b)>>>0;
@@ -173,8 +172,7 @@ $("streakL").textContent=S.streak?"🔥 "+S.streak+"-day streak":"";
 function hav(a,b,c,d){const rad=Math.PI/180,x=Math.sin((c-a)*rad/2)**2+Math.cos(a*rad)*Math.cos(c*rad)*Math.sin((d-b)*rad/2)**2;return 12742*Math.asin(Math.sqrt(x))}
 let r=0,pin=null,res=[],done=false,map=null,gameLayer=null,njLayer=null,njGeometry=null,mapReady=null,boundaryReady=null,countyLayer=null,countyFeatures=null;
 
-// The base layer is imagery only. Do NOT add a labels, roads, boundaries,
-// or "reference" overlay tile layer. The New Jersey state outline is added separately.
+// Imagery-only basemap with a separate New Jersey outline; no road-label overlays.
 const STATE_BOUNDARY_URL="https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/0/query?where=STATE%3D%2734%27&outFields=NAME%2CGEOID&returnGeometry=true&outSR=4326&f=geoJSON";
 const COUNTY_URL="https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/19/query?where=STATE%3D%2734%27&outFields=NAME%2CGEOID&returnGeometry=true&outSR=4326&f=geoJSON";
 
