@@ -29,6 +29,9 @@ export default {
       return json({day,count:row.count,average:Math.round(row.average*100)/100});
     }
     if (url.pathname.startsWith("/api/")) return json({error:"Not found"},404);
+    if (url.pathname === "/new-jersey" || url.pathname === "/new-jersey/") {
+      return env.ASSETS.fetch(new Request(new URL("/new-jersey/index.html", url), request));
+    }
     return env.ASSETS.fetch(request);
   }
 };
