@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f6f3ec">
+<meta name="description" content="A daily Pennsylvania town-guessing game. Place five towns on an unlabeled aerial map and see how well you know PA.">
+<link rel="canonical" href="https://pinnsylvania.win/new-jersey">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M16 4h32l-6 13h21L48 60H16L1 17h21L16 4Z' fill='%23173b70' stroke='%23d6a329' stroke-width='3'/%3E%3Ctext x='32' y='39' text-anchor='middle' font-family='Arial,sans-serif' font-size='19' font-weight='800' fill='%23f2c75c'%3EPA%3C/text%3E%3C/svg%3E">
+<meta property="og:type" content="website">
+<meta property="og:title" content="New Jerseypins — Daily NJ Town Game">
+<meta property="og:description" content="How well do you actually know NJ? Place five towns on an unlabeled aerial map.">
+<meta property="og:url" content="https://pinnsylvania.win/">
+<meta name="twitter:card" content="summary">
+<title>New Jerseypins — Daily NJ Town Game</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<style>
+:root{--bg:#f4f0e6;--card:#fffdf8;--ink:#172b4d;--mute:#687386;--navy:#173b70;--gold:#d6a329;--ok:#2f8f4e;--bad:#c0392b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101722;--card:#1a2638;--ink:#edf2fa;--mute:#a3afc1;--navy:#8eafe2;--gold:#e4b84f;--ok:#5fcf84;--bad:#ff7b6b;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#101722;--card:#1a2638;--ink:#edf2fa;--mute:#a3afc1;--navy:#8eafe2;--gold:#e4b84f;--ok:#5fcf84;--bad:#ff7b6b;color-scheme:dark}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:Georgia,'Times New Roman',serif;min-height:100%}
+.top-rule{height:6px;background:linear-gradient(90deg,#173b70 0 47%,#d6a329 47% 53%,#173b70 53% 100%)}
+main{max-width:760px;margin:0 auto;padding:14px}
+.brand{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;margin:14px 0 22px}
+.keystone-mark{width:62px;height:62px;display:grid;place-items:center;flex:none;filter:drop-shadow(0 3px 3px #0002)}
+.keystone-mark svg{display:block;width:100%;height:100%}
+.eyebrow{font:700 .7rem system-ui,sans-serif;letter-spacing:2px;color:var(--gold);margin:0 0 4px}
+h1{font-size:clamp(2rem,5vw,2.45rem);margin:0;color:var(--navy);letter-spacing:.2px;line-height:1.08}
+.sub{color:var(--mute);font-style:italic;margin:5px 0 0;font-size:1.08rem}
+.card{background:var(--card);border:1px solid #173b7020;border-top:3px solid var(--gold);border-radius:14px;padding:14px;box-shadow:0 2px 8px #172b4d0d;margin-bottom:12px}
+button{font:inherit;font-weight:700;border:1px solid #102d57;border-radius:10px;padding:12px 18px;background:var(--navy);color:#fff;cursor:pointer;width:100%;font-size:1rem;transition:filter .15s,transform .15s}
+button:not(:disabled):hover{filter:brightness(1.12)}
+button:not(:disabled):active{transform:translateY(1px)}
+button:disabled{opacity:.4;cursor:default}
+.hud{display:flex;justify-content:space-between;gap:12px;font-family:system-ui,sans-serif;font-size:.9rem;color:var(--mute);margin-bottom:6px}
+.town{font-size:1.6rem;font-weight:700;text-align:center;margin:4px 0 8px;color:var(--navy)}
+#map{width:100%;height:min(66vh,560px);min-height:360px;border-radius:10px;overflow:hidden;background:#d9e0e5;z-index:1;border:2px solid #173b7022}
+.map-wrap{position:relative}
+.map-action{position:absolute;z-index:500;left:12px;right:12px;bottom:12px;width:calc(100% - 24px);box-shadow:0 3px 12px #07142688;border:1px solid #ffffff55;background:var(--navy);min-height:48px}
+.map-action:disabled{opacity:.88;background:#344b6a;color:#e3eaf4;border-color:#ffffff33}
+.county-note{font-weight:700;color:var(--gold);margin-top:6px}
+.leaflet-container{font-family:system-ui,sans-serif;touch-action:pan-x pan-y}
+.leaflet-control-attribution{font-size:10px!important}
+.leaflet-control-zoom a{color:#173b70!important}
+.map-help{font: .82rem system-ui,sans-serif;color:var(--mute);text-align:center;margin:8px 0 0}
+.fact{margin:10px 0;line-height:1.45}
+.row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #8883;font-family:system-ui,sans-serif;font-size:.95rem}.round-tag{font-size:.76em;font-weight:600;color:var(--mute);white-space:nowrap;margin-left:3px}
+.big{font-size:2.6rem;font-weight:700;text-align:center;color:var(--gold);margin:0}
+.ff{font-size:.92rem;color:var(--mute);margin:2px 0 8px;line-height:1.35}
+.hide{display:none}
+@media(max-width:480px){main{padding:10px}.brand{margin:10px 0 17px}#map{height:58vh;min-height:340px}.map-action{left:9px;right:9px;bottom:9px;width:calc(100% - 18px);min-height:50px;padding:13px 14px}.card{padding:12px}}
+</style>
+</head>
+<body>
+<div class="top-rule" aria-hidden="true"></div>
+<main>
+<header class="brand">
+  <div class="keystone-mark" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M16 3H48L42 16H63L48 61H16L1 16H22Z" fill="var(--navy)" stroke="var(--gold)" stroke-width="2.5" stroke-linejoin="round"/><path d="M18 7H46L40 18H59L46 57H18L5 18H24Z" fill="none" stroke="#ffffff" stroke-opacity=".24" stroke-width="1.2"/><text x="32" y="39" text-anchor="middle" fill="#f2c75c" font-family="system-ui,sans-serif" font-size="19" font-weight="850" letter-spacing="1">NJ</text></svg></div>
+  <div>
+    <p class="eyebrow">THE GARDEN STATE · DAILY TOWN CHALLENGE</p>
+    <h1>New Jerseypins</h1>
+    <p class="sub">How well do you actually know PA?</p>
+  </div>
+</header>
+<div id="land" class="card">
+  <p style="margin:0 0 4px"><b id="pn"></b></p>
+  <p class="ff">Place 5 towns on an unlabeled aerial map of New Jersey. Closer pins earn more points — 1,000 possible. New puzzle every day.</p>
+  <button id="go">Place the pin</button>
+  <p class="ff" id="streakL" style="text-align:center;margin-top:10px"></p>
+</div>
+<div id="game" class="hide">
+  <div class="hud"><span id="rd"></span><span id="sc"></span></div>
+  <div class="card">
+    <div class="town" id="town"></div>
+    <div class="map-wrap">
+      <div id="map" aria-label="Unlabeled aerial map of New Jersey"></div>
+      <button id="act" class="map-action" disabled>Drop a pin to continue</button>
+    </div>
+    <p class="map-help">Tap anywhere inside Pennsylvania to place your pin. Zoom and drag to explore.</p>
+    <div id="info" class="fact"></div>
+  </div>
+</div>
+<div id="recap" class="card hide">
+  <p class="big" id="tot"></p><p class="sub" style="text-align:center" id="strk"></p>
+  <div id="rows"></div>
+  <p class="ff" id="dailyAvg" style="text-align:center;font-weight:700;margin-top:12px">Today's average: loading…</p>
+  <button id="share" style="margin-top:12px">Share your score</button>
+  <p class="ff" id="cd" style="text-align:center;margin-top:10px"></p>
+</div>
+</main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+// Puzzle pool: facts must be human-reviewed before launch. Round order: easy → hard.
+let PZ=[[{"n":"Newark","lat":40.7357,"lon":-74.1724,"f":"🏙️ New Jersey’s largest city and a major port and transportation hub."},{"n":"Jersey City","lat":40.7178,"lon":-74.0431,"f":"🌆 Its waterfront has sweeping views of the Manhattan skyline."},{"n":"Trenton","lat":40.2171,"lon":-74.7429,"f":"🏛️ New Jersey’s capital, located along the Delaware River."},{"n":"Atlantic City","lat":39.3643,"lon":-74.4229,"f":"🎡 A famous seaside resort known for its boardwalk."}],[{"n":"Princeton","lat":40.3573,"lon":-74.6672,"f":"🎓 Home to Princeton University, founded in 1746."},{"n":"Camden","lat":39.9259,"lon":-75.1196,"f":"⛴️ Located directly across the Delaware River from Philadelphia."},{"n":"Hoboken","lat":40.743,"lon":-74.0324,"f":"🎂 Frank Sinatra was born in Hoboken."},{"n":"Cape May","lat":38.9351,"lon":-74.906,"f":"🏖️ Known for its Victorian architecture and beaches."}],[{"n":"Morristown","lat":40.7968,"lon":-74.4815,"f":"🇺🇸 George Washington made his winter headquarters here during the Revolution."},{"n":"New Brunswick","lat":40.4862,"lon":-74.4518,"f":"🎓 Home to Rutgers University’s flagship campus."},{"n":"Asbury Park","lat":40.2206,"lon":-74.0121,"f":"🎸 A Jersey Shore music town closely associated with Bruce Springsteen."},{"n":"Haddonfield","lat":39.8915,"lon":-75.0377,"f":"🦴 A dinosaur fossil discovered here helped launch American paleontology."}],[{"n":"Hackensack","lat":40.8859,"lon":-74.0435,"f":"🏙️ The Bergen County seat, just west of the Hudson River."},{"n":"Lambertville","lat":40.3659,"lon":-74.9427,"f":"🎨 A Delaware River town known for antiques and galleries."},{"n":"Red Bank","lat":40.3471,"lon":-74.0643,"f":"🎭 A Monmouth County arts and entertainment hub."},{"n":"Phillipsburg","lat":40.6937,"lon":-75.1902,"f":"🚂 A historic Delaware River railroad town."}],[{"n":"Alloway","lat":39.56,"lon":-75.35,"f":"🌾 A rural Salem County community."},{"n":"Hope","lat":40.91,"lon":-74.95,"f":"🌳 A small Warren County community."},{"n":"Island Heights","lat":39.94,"lon":-74.15,"f":"⛵ A small town along the Toms River."},{"n":"Newfield","lat":39.55,"lon":-75.01,"f":"🌲 A small Gloucester County borough."}]];
+const MULT=[1,1,2,3,3],BAND=d=>d<10?"🎯":d<40?"🔥":d<120?"😬":"💀";
+const $=id=>document.getElementById(id);
+const ny=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York"}).format(new Date());
+const num=Math.round((Date.UTC(...ny.split("-").map((v,i)=>i===1?v-1:+v))-Date.UTC(2026,10,10))/864e5)+1;
+// Retain hand-researched local trivia for towns already in the original pool.
+const KNOWN_FACTS=Object.fromEntries(PZ.flat().filter(t=>t.f).map(t=>[t.n,t.f]));
+// Load the complete 2024 Census Pennsylvania places file (2,002 incorporated places
+// and census-designated places), not just InstaMaps' 600-place display subset.
+const CENSUS_PLACES_URL="https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2024_Gazetteer/2024_gaz_place_34.txt";
+function puzzleForDay(dayNumber){
+  let seed=(Math.imul(dayNumber,0x9e3779b1)^0x85ebca6b)>>>0;
+  if(seed===0)seed=1;
+  const random=()=>{
+    seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;
+    return (seed>>>0)/4294967296;
+  };
+  // Larger Census places are generally easier to recognize; small places make
+  // progressively harder rounds. The seed keeps the daily set deterministic.
+  const veryEasy=new Set(["Newark","Jersey City","Trenton","Atlantic City","Princeton","Hoboken","Camden","New Brunswick"]);
+  const sorted=PZ.flat().slice().sort((a,b)=>(Number(veryEasy.has(b.n))-Number(veryEasy.has(a.n)))||(b.population-a.population)||(b.area-a.area));
+  const tiers=Array.from({length:5},(_,i)=>{
+    const start=Math.floor(i*sorted.length/5),end=Math.floor((i+1)*sorted.length/5);
+    return sorted.slice(start,end);
+  });
+  return tiers.map(tier=>tier[Math.floor(random()*tier.length)]);
+}
+const censusReady=(async()=>{
+  try{
+    const response=await fetch(CENSUS_PLACES_URL,{cache:"force-cache"});
+    if(!response.ok)throw new Error("Census Gazetteer returned "+response.status);
+    const lines=(await response.text()).trim().split(/\r?\n/);
+    // 2020 Decennial Census population is used only to filter CDPs and order
+    // difficulty. Incorporated cities, boroughs, towns and municipalities stay.
+    const populations=new Map();
+    try{
+      const popResponse=await fetch("https://api.census.gov/data/2020/dec/pl?get=NAME%2CP1_001N&for=place%3A%2A&in=state%3A34",{cache:"force-cache"});
+      if(!popResponse.ok)throw new Error("2020 Census population API returned "+popResponse.status);
+      const popRows=await popResponse.json();
+      popRows.slice(1).forEach(row=>populations.set("42"+row[3],Number(row[1])||0));
+    }catch(popError){console.warn("2020 population data unavailable; excluding all CDPs except Hershey:",popError);}
+    const records=lines.slice(1).map(line=>line.split("\t")).filter(row=>row.length>=12&&row[0]==="NJ");
+    if(records.length<1900)throw new Error("Incomplete Pennsylvania Gazetteer: "+records.length+" records");
+    const parsed=records.map(row=>{
+      const rawName=row[3]||"";
+      const match=rawName.match(/^(.*)\s+(city|borough|CDP|town|municipality)$/i);
+      const name=(match?match[1]:rawName).trim();
+      const type=match?match[2].toLowerCase():"place";
+      const lat=Number(row[10]),lon=Number(row[11]),area=Number(row[8]),water=Number(row[9]);
+      return {n:name,type,geoid:row[1],lat,lon,area:Number.isFinite(area)?area:0,water:Number.isFinite(water)?water:0};
+    }).map(t=>({...t,population:populations.get(t.geoid)||0}));
+    const included=parsed.filter(t=>{
+      const incorporated=["city","borough","town","municipality"].includes(t.type);
+      return incorporated||(t.type==="cdp"&&(t.n==="Hershey"||t.population>=5000));
+    }).filter(t=>t.n&&Number.isFinite(t.lat)&&Number.isFinite(t.lon)&&t.lat>38.8&&t.lat<41.5&&t.lon>-75.6&&t.lon<-73.8);
+    const counts={};included.forEach(t=>counts[t.n]=(counts[t.n]||0)+1);
+    const typeCounts={};included.forEach(t=>{const key=t.n+"|"+t.type;typeCounts[key]=(typeCounts[key]||0)+1});
+    PZ=included.map(t=>{
+      let n=counts[t.n]>1?t.n+" ("+t.type+")":t.n;
+      if(typeCounts[t.n+"|"+t.type]>1)n+=" · "+t.geoid;
+      const land=t.area.toFixed(2),water=t.water.toFixed(2);
+      const fact=KNOWN_FACTS[t.n]||("📍 Census geography fact: "+t.n+" is a New Jersey "+t.type+" covering "+land+" square miles of land"+(t.water>0.005?" and "+water+" square miles of water.":"."));
+      return {...t,n,f:fact};
+    });
+    console.info("Loaded "+PZ.length+" Pennsylvania places (incorporated places plus CDPs with 5,000+ residents and Hershey).");
+  }catch(error){
+    console.warn("Using built-in town bank; Census place download failed:",error);
+  }
+  puz=puzzleForDay(num);
+  if(puz.every((town,index)=>town.n===yesterdayPuzzle[index].n))puz=puzzleForDay(num+104729);
+})();
+let puz=puzzleForDay(num);
+// Avoid the same exact five-town lineup on two consecutive dates.
+const yesterdayPuzzle=puzzleForDay(num-1);
+let S={};try{S=JSON.parse(localStorage.getItem("ks-nj")||"{}")}catch(e){}
+const save=()=>{try{localStorage.setItem("ks-nj",JSON.stringify(S))}catch(e){}};
+$("pn").textContent="New Jersey · Puzzle #"+num+" · "+ny;
+$("streakL").textContent=S.streak?"🔥 "+S.streak+"-day streak":"";
+function hav(a,b,c,d){const rad=Math.PI/180,x=Math.sin((c-a)*rad/2)**2+Math.cos(a*rad)*Math.cos(c*rad)*Math.sin((d-b)*rad/2)**2;return 12742*Math.asin(Math.sqrt(x))}
+let r=0,pin=null,res=[],done=false,map=null,gameLayer=null,paLayer=null,paGeometry=null,mapReady=null,countyLayer=null,countyFeatures=[];
+
+// The base layer is imagery only. Do NOT add a labels, roads, boundaries,
+// or "reference" overlay tile layer. The only linework added is PA's outline.
+const STATE_BOUNDARY_URL="https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json";
+const COUNTY_URL="https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/19/query?where=STATE%3D%2734%27&outFields=NAME%2CGEOID&returnGeometry=true&outSR=4326&f=geoJSON";
+
+function pointInRing(point,ring){
+  const x=point.lng,y=point.lat;let inside=false;
+  for(let i=0,j=ring.length-1;i<ring.length;j=i++){
+    const xi=ring[i][0],yi=ring[i][1],xj=ring[j][0],yj=ring[j][1];
+    const crosses=((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi);
+    if(crosses)inside=!inside;
+  }
+  return inside;
+}
+function pointInGeometry(latlng,geometry){
+  if(!geometry)return false;
+  const polygons=geometry.type==="Polygon"?[geometry.coordinates]:geometry.type==="MultiPolygon"?geometry.coordinates:[];
+  return polygons.some(poly=>pointInRing(latlng,poly[0])&&!poly.slice(1).some(hole=>pointInRing(latlng,hole)));
+}
+function pointInPA(latlng){return pointInGeometry(latlng,paGeometry)}
+function countyForTown(town){
+  const point={lat:town.lat,lng:town.lon};
+  return countyFeatures.find(feature=>pointInGeometry(point,feature.geometry))||null;
+}
+function revealCounty(town){
+  if(countyLayer){map.removeLayer(countyLayer);countyLayer=null;}
+  const feature=countyForTown(town);
+  if(!feature)return "";
+  countyLayer=L.geoJSON(feature,{interactive:false,style:{color:"#f2c75c",weight:4,opacity:0,fillColor:"#f2c75c",fillOpacity:0}}).addTo(map);
+  const fadeStart=performance.now(),fadeDuration=1100;
+  const fade=now=>{
+    if(!countyLayer)return;
+    const progress=Math.min(1,(now-fadeStart)/fadeDuration);
+    const eased=1-Math.pow(1-progress,3);
+    countyLayer.setStyle({opacity:eased,fillOpacity:.22*eased});
+    if(progress<1)requestAnimationFrame(fade);
+  };
+  requestAnimationFrame(fade);
+  countyLayer.bringToFront();
+  if(gameLayer)gameLayer.bringToFront();
+  if(paLayer)paLayer.bringToFront();
+  return feature.properties?.NAME||feature.properties?.BASENAME||"";
+}
+async function initMap(){
+  if(map){requestAnimationFrame(()=>map.invalidateSize());return;}
+  if(mapReady)return mapReady;
+  mapReady=(async()=>{
+    map=L.map("map",{
+      zoomControl:true,scrollWheelZoom:true,doubleClickZoom:true,
+      touchZoom:true,dragging:true,boxZoom:false,keyboard:true,
+      minZoom:6,maxZoom:14,zoomSnap:0.5
+    });
+    L.tileLayer("https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{
+      maxZoom:14,maxNativeZoom:14,
+      attribution:"Imagery © Esri, Maxar, Earthstar Geographics"
+    }).addTo(map);
+
+    try{
+      const response=await fetch(STATE_BOUNDARY_URL);
+      if(!response.ok)throw new Error("Boundary service returned "+response.status);
+      const allStates=await response.json();
+      const paFeature=allStates.features?.find(feature=>feature.properties?.name==="New Jersey");
+      if(!paFeature)throw new Error("Pennsylvania boundary was not found in the GeoJSON");
+      paGeometry=paFeature.geometry;
+      paLayer=L.geoJSON(paFeature,{
+        interactive:false,
+        style:{color:"#ffffff",weight:3,opacity:1,fill:false}
+      }).addTo(map);
+      try{
+        const countyResponse=await fetch(COUNTY_URL);
+        if(!countyResponse.ok)throw new Error("County boundary service returned "+countyResponse.status);
+        const countyData=await countyResponse.json();
+        countyFeatures=countyData.features||[];
+        if(!countyFeatures.length)throw new Error("No Pennsylvania county boundaries returned");
+      }catch(countyError){
+        console.warn("County outlines unavailable:",countyError);
+        countyFeatures=[];
+      }
+      const bounds=paLayer.getBounds();
+      map.fitBounds(bounds,{padding:[12,12]});
+      map.setMaxBounds(bounds.pad(0.18));
+      map.on("click",e=>{
+        if(done)return;
+        if(!pointInPA(e.latlng)){
+          $("info").textContent="Keep your pin inside New Jersey.";
+          return;
+        }
+        pin=e.latlng;
+        gameLayer.clearLayers();
+        L.circleMarker(pin,{radius:6,color:"#fff",weight:2,fillColor:"#c0392b",fillOpacity:1}).addTo(gameLayer);
+        $("info").textContent="";
+        $("act").disabled=false;
+        $("act").textContent="Confirm guess";
+      });
+    }catch(error){
+      console.error("Could not load Pennsylvania boundary:",error);
+      $("info").textContent="The New Jersey outline could not load. Please refresh the page and try again.";
+      throw error;
+    }
+    gameLayer=L.layerGroup().addTo(map);
+    requestAnimationFrame(()=>map.invalidateSize());
+  })().catch(error=>{mapReady=null;throw error;});
+  return mapReady;
+}
+function resetMapView(){
+  if(!map||!paLayer)return;
+  map.invalidateSize({pan:false});
+  map.fitBounds(paLayer.getBounds(),{padding:[12,12],animate:false});
+}
+function round(){
+  const t=puz[r];pin=null;done=false;gameLayer.clearLayers();$("info").textContent="";
+  if(countyLayer){map.removeLayer(countyLayer);countyLayer=null;}
+  resetMapView();
+  $("rd").textContent="Round "+(r+1)+" of 5 · ×"+MULT[r]+" multiplier";
+  $("sc").textContent="Score: "+res.reduce((s,x)=>s+x.p,0);
+  $("town").textContent=t.n;$("act").textContent="Drop a pin to continue";$("act").disabled=true;
+}
+$("go").onclick=async()=>{
+  $("go").disabled=true;
+  $("go").textContent="Loading aerial map…";
+  $("land").classList.add("hide");$("game").classList.remove("hide");
+  try{await censusReady;await initMap();round();}
+  catch(e){$("game").classList.add("hide");$("land").classList.remove("hide");$("go").disabled=false;$("go").textContent="Try loading the map again";}
+};
+$("act").onclick=()=>{
+  if(done){r++;if(r<5)round();else finish();return;}
+  if(!pin)return;
+  const t=puz[r],glat=pin.lat,glon=pin.lng,d=hav(glat,glon,t.lat,t.lon);
+  const raw=d<=5?100:Math.max(0,Math.round(100*(1-(d-5)/245))),pts=raw*MULT[r];
+  res.push({p:pts,w:raw,d,b:BAND(d)});done=true;
+  L.polyline([pin,[t.lat,t.lon]],{color:"#fff",weight:2,dashArray:"5, 6",opacity:.95}).addTo(gameLayer);
+  L.circleMarker([t.lat,t.lon],{radius:7,color:"#fff",weight:2,fillColor:"#2f8f4e",fillOpacity:1}).addTo(gameLayer);
+  const countyName=revealCounty(t);
+  $("info").innerHTML="<b>"+BAND(d)+" "+Math.round(d)+" km off · +"+raw+"/100"+(MULT[r]>1?" (×"+MULT[r]+" = "+pts+" pts)":" pts")+"</b><br>"+(t.f||"Pennsylvania place; coordinates from the 2024 U.S. Census Gazetteer.")+(countyName?"<div class='county-note'>📍 "+countyName+" County highlighted on the map</div>":"");
+  $("sc").textContent="Score: "+res.reduce((s,x)=>s+x.p,0);
+  $("act").disabled=false;
+  $("act").textContent=r<4?"Next round →":"See results";
+};
+async function finish(){
+  const tot=res.reduce((s,x)=>s+x.p,0);
+  if(S.last!==ny){
+    const yesterday=new Date(Date.parse(ny+"T12:00:00Z")-864e5).toISOString().slice(0,10);
+    S.streak=S.last===yesterday?(S.streak||0)+1:1;
+    S.last=ny;S.tot=tot;S.res=res;save();
+  }
+  show(S.tot,S.res);
+  await submitDailyScore(S.tot);
+}
+// Submit at most one score per browser per day; the server enforces this with a
+// UNIQUE(day, player_id) constraint. The ID is random and stays in localStorage.
+function getPlayerId(){
+  if(!S.playerId){S.playerId=(crypto.randomUUID?crypto.randomUUID():("p"+Date.now()+Math.random().toString(36).slice(2)));save();}
+  return S.playerId;
+}
+async function loadDailyAverage(){
+  try{
+    const response=await fetch("/api/daily-average?game=nj&day="+encodeURIComponent(ny),{cache:"no-store"});
+    if(!response.ok)throw new Error("Average endpoint returned "+response.status);
+    const data=await response.json();
+    $("dailyAvg").textContent=data.count
+      ?"Today's average: "+Math.round(data.average)+" / 1000 ("+data.count+" "+(data.count===1?"player":"players")+")"
+      :"Today's average: be the first to play!";
+  }catch(error){
+    $("dailyAvg").textContent="Today's average unavailable right now.";
+    console.warn("Could not load daily average:",error);
+  }
+}
+async function submitDailyScore(score){
+  try{
+    const response=await fetch("/api/score",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({day:ny,score,playerId:"nj-"+getPlayerId()})});
+    if(!response.ok)throw new Error("Score endpoint returned "+response.status);
+    await loadDailyAverage();
+  }catch(error){
+    $("dailyAvg").textContent="Daily average will appear when the score service is available.";
+    console.warn("Could not submit daily score:",error);
+  }
+}
+function show(tot,rs){
+  $("land").classList.add("hide");$("game").classList.add("hide");$("recap").classList.remove("hide");
+  $("tot").textContent=tot+" / 1000";$("strk").textContent="🔥 "+S.streak+"-day streak";
+  const roundDifficulty=["Easy","Easy","Medium","Hard","Hard"];
+  $("rows").innerHTML=puz.map((t,i)=>"<div class='row'><span>"+t.n+" <small class='round-tag'>("+roundDifficulty[i]+" "+MULT[i]+"×)</small></span><b>"+rs[i].b+" "+(rs[i].w??rs[i].p)+"/100</b></div><p class='ff'>"+(t.f||"Pennsylvania place; coordinates from the 2024 U.S. Census Gazetteer.")+"</p>").join("");
+  loadDailyAverage();
+  window._share="New Jerseypins #"+num+" — "+tot+"/1000 🔥 "+S.streak+"\n"+rs.map(x=>x.b+(x.w??x.p)).join(" · ")+"\nhttps://pinnsylvania.win/new-jersey";
+  const tick=()=>{const now=new Date(),midnight=new Date(now);midnight.setHours(24,0,0,0);const seconds=Math.floor((midnight-now)/1000);$("cd").textContent="Next puzzle in "+Math.floor(seconds/3600)+"h "+Math.floor(seconds%3600/60)+"m"};
+  tick();setInterval(tick,3e4);
+}
+$("share").onclick=async()=>{try{await navigator.clipboard.writeText(window._share);$("share").textContent="Copied! ✓"}catch(e){prompt("Copy your score:",window._share)}};
+censusReady.then(()=>{if(S.last===ny&&S.res)show(S.tot,S.res)});
+</script>
+</body>
+</html>
