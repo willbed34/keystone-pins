@@ -127,17 +127,28 @@ function pointInGeometry(point,geometry){
 function featureStateFips(feature){const p=feature?.properties||{};const raw=p.STATE??p.STATEFP??p.STATE_FIPS??(p.GEOID?String(p.GEOID).slice(0,2):"");return String(raw).padStart(2,"0");}
 function stateAt(point){return stateFeatures.find(f=>pointInGeometry(point,f.geometry))||null;}
 async function revealState(college,roundIndex){
- await stateReady;
  if(highlightLayer){map.removeLayer(highlightLayer);highlightLayer=null;}
- const targetFips=FIPS[college.state];
- const feature=stateFeatures.find(f=>featureStateFips(f)===targetFips);
- if(!feature){console.warn("Could not match state boundary",college.state,targetFips,stateFeatures.length,stateFeatures[0]?.properties);return "";}
  if(r!==roundIndex||!done)return "";
- const layer=L.geoJSON(feature,{interactive:false,style:{color:"#f2c75c",weight:4,opacity:0,fillColor:"#f2c75c",fillOpacity:0}}).addTo(map);
- highlightLayer=layer;
- const start=performance.now(),duration=1100;
- const fade=now=>{if(highlightLayer!==layer)return;const p=Math.min(1,(now-start)/duration),e=1-Math.pow(1-p,3);layer.setStyle({opacity:e,fillOpacity:.2*e});if(p<1)requestAnimationFrame(fade)};
- requestAnimationFrame(fade);if(gameLayer)gameLayer.bringToFront();layer.bringToFront();return feature.properties.NAME||college.state;
+ const fips=FIPS[college.state];
+ if(!fips){console.warn("Missing state FIPS for",college.state);return "";}
+ try{
+  // Fetch only the answer state's polygon. This mirrors the proven county
+  // highlight flow used by Pinnsylvania instead of filtering a bulk response.
+  const url="https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/0/query?where=STATE%3D%27"+fips+"%27&outFields=NAME,STATE,GEOID&returnGeometry=true&outSR=4326&f=geoJSON";
+  const response=await fetch(url,{cache:"force-cache"});
+  if(!response.ok)throw new Error("State boundary service returned "+response.status);
+  const data=await response.json();
+  const feature=(data.features||[]).find(f=>String(f.properties?.STATE??f.properties?.GEOID??"").padStart(2,"0")===fips)||(data.features||[])[0];
+  if(!feature?.geometry)throw new Error("No boundary geometry returned for "+college.state);
+  if(r!==roundIndex||!done)return "";
+  const layer=L.geoJSON(feature,{interactive:false,style:{color:"#f2c75c",weight:4,opacity:0,fillColor:"#f2c75c",fillOpacity:0}}).addTo(map);
+  highlightLayer=layer;
+  const start=performance.now(),duration=1100;
+  const fade=now=>{if(highlightLayer!==layer)return;const p=Math.min(1,(now-start)/duration),e=1-Math.pow(1-p,3);layer.setStyle({opacity:e,fillOpacity:.24*e});if(p<1)requestAnimationFrame(fade)};
+  requestAnimationFrame(fade);
+  if(gameLayer)gameLayer.bringToFront();layer.bringToFront();
+  return feature.properties?.NAME||college.state;
+ }catch(error){console.warn("State highlight unavailable:",error);$("info").innerHTML+="<div class='state-note'>State outline couldn't load. Try again shortly.</div>";return "";}
 }
 async function initMap(){
  if(map){requestAnimationFrame(()=>map.invalidateSize());return;}
