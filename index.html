@@ -88,11 +88,10 @@ button:disabled{opacity:.4;cursor:default}
   <button id="share" style="margin-top:12px">Share your score</button>
   <p class="ff" id="cd" style="text-align:center;margin-top:10px"></p>
 </div>
-<div class="nj-promo" style="margin:18px auto 28px;text-align:center">
-  <a href="/new-jersey" style="display:block;max-width:460px;margin:0 auto;padding:14px 18px;border:1px solid #d6a329;border-radius:12px;background:#173b70;color:#fff;text-decoration:none;font-weight:800;box-shadow:0 3px 0 #102b50">
-    Want to try New Jersey? → <span style="display:block;font-size:12px;font-weight:500;opacity:.85;margin-top:3px">Take on the Garden State daily challenge</span>
-  </a>
-</div>
+<nav class="state-games" aria-label="More state games" style="margin:18px auto 28px;text-align:center;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-width:600px">
+<a href="/new-jersey" style="padding:13px 8px;border:1px solid #d6a329;border-radius:10px;background:#173b70;color:#fff;text-decoration:none;font-weight:800">Garden State Guess <small style="display:block;font-size:11px;font-weight:500;opacity:.85">New Jersey</small></a>
+<a href="/new-york" style="padding:13px 8px;border:1px solid #d6a329;border-radius:10px;background:#173b70;color:#fff;text-decoration:none;font-weight:800">Empire State Pin <small style="display:block;font-size:11px;font-weight:500;opacity:.85">New York</small></a>
+</nav>
 </main>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script>
@@ -320,16 +319,17 @@ $("go").onclick=async()=>{
 $("act").onclick=()=>{
   if(done){r++;if(r<5)round();else finish();return;}
   if(!pin)return;
-  const t=puz[r],glat=pin.lat,glon=pin.lng,d=hav(glat,glon,t.lat,t.lon);
-  const raw=d<=5?100:Math.max(0,Math.round(100*(1-(d-5)/245))),pts=raw*MULT[r];
+  const roundIndex=r,t=puz[roundIndex],glat=pin.lat,glon=pin.lng,d=hav(glat,glon,t.lat,t.lon);
+  const multiplier=MULT[roundIndex],raw=d<=5?100:Math.max(0,Math.round(100*(1-(d-5)/245))),pts=raw*multiplier;
   res.push({p:pts,w:raw,d,b:BAND(d)});done=true;
+  // Reveal the next action immediately; county highlighting must never block progression.
+  $("act").textContent=roundIndex<4?"Next round →":"See results";
+  $("act").disabled=false;
   L.polyline([pin,[t.lat,t.lon]],{color:"#fff",weight:2,dashArray:"5, 6",opacity:.95}).addTo(gameLayer);
   L.circleMarker([t.lat,t.lon],{radius:7,color:"#fff",weight:2,fillColor:"#2f8f4e",fillOpacity:1}).addTo(gameLayer);
   const countyName=revealCounty(t);
-  $("info").innerHTML="<b>"+BAND(d)+" "+Math.round(d)+" km off · +"+raw+"/100"+(MULT[r]>1?" (×"+MULT[r]+" = "+pts+" pts)":" pts")+"</b><br>"+(t.f||"Pennsylvania place; coordinates from the 2024 U.S. Census Gazetteer.")+(countyName?"<div class='county-note'>📍 "+countyName+" County highlighted on the map</div>":"");
+  $("info").innerHTML="<b>"+BAND(d)+" "+Math.round(d)+" km off · +"+raw+"/100"+(multiplier>1?" (×"+multiplier+" = "+pts+" pts)":" pts")+"</b><br>"+(t.f||"Pennsylvania place; coordinates from the 2024 U.S. Census Gazetteer.")+(countyName?"<div class='county-note'>📍 "+countyName+" County highlighted on the map</div>":"");
   $("sc").textContent="Score: "+res.reduce((s,x)=>s+x.p,0);
-  $("act").disabled=false;
-  $("act").textContent=r<4?"Next round →":"See results";
 };
 async function finish(){
   const tot=res.reduce((s,x)=>s+x.p,0);
