@@ -385,11 +385,11 @@ function show(tot,rs){
   const roundDifficulty=["Easy","Easy","Medium","Hard","Hard"];
   $("rows").innerHTML=puz.map((t,i)=>"<div class='row'><span>"+t.n+" <small class='round-tag'>("+roundDifficulty[i]+" "+MULT[i]+"×)</small></span><b>"+rs[i].b+" "+(rs[i].w??rs[i].p)+"/100</b></div><p class='ff'>"+(t.f||"New Jersey place; coordinates from the 2024 U.S. Census Gazetteer.")+"</p>").join("");
   loadDailyAverage();
-  window._share="https://pinnsylvania.win/new-jersey "+new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",timeZone:"America/New_York"})+"\n"+rs.map(x=>x.b+(x.w??x.p)).join("\n")+"\n\nFinal score: "+tot;
+  window._shareText=new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",timeZone:"America/New_York"})+"\n"+rs.map(x=>x.b+(x.w??x.p)).join("\n")+"\n\nFinal score: "+tot;window._shareUrl="https://pinnsylvania.win/new-jersey";window._share=window._shareUrl+"\n"+window._shareText;
   const tick=()=>{const now=new Date(),midnight=new Date(now);midnight.setHours(24,0,0,0);const seconds=Math.floor((midnight-now)/1000);$("cd").textContent="Next puzzle in "+Math.floor(seconds/3600)+"h "+Math.floor(seconds%3600/60)+"m"};
   tick();setInterval(tick,3e4);
 }
-$("share").onclick=async()=>{const btn=$("share");try{if(navigator.share){await navigator.share({title:"Your score",text:window._share});btn.textContent="Shared! ✓";}else if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(window._share);btn.textContent="Copied! ✓";}else{prompt("Copy your score:",window._share);}}catch(e){if(e?.name==="AbortError")return;try{await navigator.clipboard.writeText(window._share);btn.textContent="Copied! ✓";}catch(copyError){prompt("Copy your score:",window._share);}}};
+$("share").onclick=async()=>{const btn=$("share");try{if(navigator.share){await navigator.share({title:"Your score",text:window._shareText,url:window._shareUrl});btn.textContent="Shared! ✓";}else if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(window._share);btn.textContent="Copied! ✓";}else{prompt("Copy your score:",window._share);}}catch(e){if(e?.name==="AbortError")return;try{await navigator.clipboard.writeText(window._share);btn.textContent="Copied! ✓";}catch(copyError){prompt("Copy your score:",window._share);}}};
 censusReady.then(()=>{if(S.last===ny&&S.res)show(S.tot,S.res)});
 </script>
 </body>
