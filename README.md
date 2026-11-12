@@ -4,11 +4,17 @@
 
 **New Jersey game:** https://pinnsylvania.win/new-jersey
 
+**New York game:** https://pinnsylvania.win/new-york
+
 A static daily Pennsylvania town-guessing game. The site is a single `index.html` file; no build step is required.
 
 ## New Jersey game
 
 The `/new-jersey` route serves a separate New Jersey version of the daily game. It uses New Jersey Census place/population data, the New Jersey state boundary, and New Jersey county geometries. Its local streak and puzzle state are stored separately, and the Worker keeps New Jersey daily score averages separate from Pennsylvania scores.
+
+## New York game
+
+The `/new-york` route serves **New York State of Find**, a separate daily New York map game. It uses the 2024 New York Census Gazetteer, 2020 Census place populations, the New York state boundary, and New York county geometries. Its streak, puzzle state, and daily score averages are stored separately from Pennsylvania and New Jersey. The visual theme is inspired by New York subway wayfinding.
 
 ## Map implementation
 
