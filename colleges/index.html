@@ -168,9 +168,8 @@ function round(){
  $("sc").textContent="Score: "+res.reduce((s,x)=>s+x.p,0);$("college").textContent=t.name;$("act").textContent="Drop a pin to continue";$("act").disabled=true;
 }
 $("go").onclick=async()=>{
- if(restoreCompletedToday())return;
- $("go").disabled=true;$("go").textContent="Loading U.S. map…";$("land").classList.add("hide");$("game").classList.remove("hide");
- try{await loadCollegeCorpus();await initMap();round()}catch(e){console.error(e);$("game").classList.add("hide");$("land").classList.remove("hide");$("go").disabled=false;$("go").textContent="Try loading the map again"}
+ $("go").disabled=true;$("go").textContent="Loading colleges & map…";$("land").classList.add("hide");$("game").classList.remove("hide");
+ try{await loadCollegeCorpus();if(restoreCompletedToday())return;await initMap();round()}catch(e){console.error(e);$("game").classList.add("hide");$("land").classList.remove("hide");$("go").disabled=false;$("go").textContent="Try loading again"}
 };
 $("act").onclick=async()=>{
  if(done){r++;if(r<5)round();else finish();return}if(!pin)return;
