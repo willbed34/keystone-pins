@@ -160,7 +160,7 @@ function resetMap(){if(!map)return;map.invalidateSize({pan:false});map.setView([
 function round(){
  const t=puz[r];pin=null;done=false;gameLayer.clearLayers();$("info").textContent="";
  if(highlightLayer){map.removeLayer(highlightLayer);highlightLayer=null;}
- resetMap();$("rd").textContent="Round "+(r+1)+" of 5 · "+["Easy","Easy","Medium","Hard","Hard"][r]+" · ×"+MULT[r];
+ resetMap();$("rd").textContent="Round "+(r+1)+" of 5 · "+["Very easy","Easy","Medium","Hard","Very hard"][r]+" · ×"+MULT[r];
  $("sc").textContent="Score: "+res.reduce((s,x)=>s+x.p,0);$("college").textContent=t.name;$("act").textContent="Drop a pin to continue";$("act").disabled=true;
 }
 $("go").onclick=async()=>{
@@ -192,7 +192,7 @@ async function submitDailyScore(score){
 }
 function show(total,results){
  $("land").classList.add("hide");$("game").classList.add("hide");$("recap").classList.remove("hide");$("tot").textContent=total+" / 1000";$("strk").textContent="🔥 "+S.streak+"-day streak";
- $("rows").innerHTML=puz.map((t,i)=>"<div class='row'><span>"+t.name+" <small class='tag'>("+["Easy","Easy","Medium","Hard","Hard"][i]+" "+MULT[i]+"×)</small></span><b>"+results[i].b+" "+(results[i].w??results[i].p)+"/100</b></div>").join("");
+ $("rows").innerHTML=puz.map((t,i)=>"<div class='row'><span>"+t.name+" <small class='tag'>("+["Very easy","Easy","Medium","Hard","Very hard"][i]+" "+MULT[i]+"×)</small></span><b>"+results[i].b+" "+(results[i].w??results[i].p)+"/100</b></div>").join("");
  loadDailyAverage();
  const date=new Date(ny+"T12:00:00-05:00").toLocaleDateString("en-US",{month:"long",day:"numeric",timeZone:"America/New_York"});
  window._share="https://pinnsylvania.win/colleges "+date+"\n"+results.map(x=>x.b+(x.w??x.p)).join("\n")+"\n\nFinal score: "+total;
