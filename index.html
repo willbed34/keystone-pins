@@ -89,9 +89,10 @@ button:disabled{opacity:.4;cursor:default}
   <button id="share" style="margin-top:12px">Share your score</button>
   <p class="ff" id="cd" style="text-align:center;margin-top:10px"></p>
 </div>
-<nav class="state-games" aria-label="More state games" style="margin:18px auto 28px;text-align:center;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-width:760px">
+<nav class="state-games" aria-label="More state games" style="margin:18px auto 28px;text-align:center;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-width:760px">
 <a href="/new-jersey" style="padding:12px 5px;border:1px solid #d6a329;border-radius:10px;background:#173b70;color:#fff;text-decoration:none;font-weight:800;font-size:.9rem">Garden State Guess <small style="display:block;font-size:10px;font-weight:500;opacity:.85">Guess the spot</small></a>
 <a href="/new-york" style="padding:12px 5px;border:1px solid #d6a329;border-radius:10px;background:#173b70;color:#fff;text-decoration:none;font-weight:800;font-size:.9rem">New York State of Find <small style="display:block;font-size:10px;font-weight:500;opacity:.85">Find the location</small></a>
+<a href="/colleges" style="padding:12px 5px;border:1px solid #d6a329;border-radius:10px;background:#173b70;color:#fff;text-decoration:none;font-weight:800;font-size:.9rem">Campus Pins <small style="display:block;font-size:10px;font-weight:500;opacity:.85">Guess the college</small></a>
 </nav>
 </main>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
@@ -414,7 +415,7 @@ function show(tot,rs){
   const roundDifficulty=["Easy","Easy","Medium","Hard","Hard"];
   $("rows").innerHTML=puz.map((t,i)=>"<div class='row'><span>"+t.n+" <small class='round-tag'>("+roundDifficulty[i]+" "+MULT[i]+"×)</small></span><b>"+rs[i].b+" "+(rs[i].w??rs[i].p)+"/100</b></div><p class='ff'>"+(t.f||"Pennsylvania place; coordinates from the 2024 U.S. Census Gazetteer.")+"</p>").join("");
   loadDailyAverage();
-  window._share="www.pinnsylvania.win/ "+new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",timeZone:"America/New_York"})+"\n"+rs.map(x=>x.b+(x.w??x.p)).join("\n")+"\n\nFinal score: "+tot;
+  window._share="pinnsylvania.win/ "+new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",timeZone:"America/New_York"})+"\n"+rs.map(x=>x.b+(x.w??x.p)).join("\n")+"\n\nFinal score: "+tot;
   const tick=()=>{const now=new Date(),midnight=new Date(now);midnight.setHours(24,0,0,0);const seconds=Math.floor((midnight-now)/1000);$("cd").textContent="Next puzzle in "+Math.floor(seconds/3600)+"h "+Math.floor(seconds%3600/60)+"m"};
   tick();setInterval(tick,3e4);
 }
