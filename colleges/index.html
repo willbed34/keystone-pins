@@ -124,18 +124,20 @@ function pointInGeometry(point,geometry){
  if(!geometry)return false;const polys=geometry.type==="Polygon"?[geometry.coordinates]:geometry.type==="MultiPolygon"?geometry.coordinates:[];
  return polys.some(poly=>pointInRing(point,poly[0])&&!poly.slice(1).some(hole=>pointInRing(point,hole)));
 }
+function featureStateFips(feature){const p=feature?.properties||{};const raw=p.STATE??p.STATEFP??p.STATE_FIPS??(p.GEOID?String(p.GEOID).slice(0,2):"");return String(raw).padStart(2,"0");}
 function stateAt(point){return stateFeatures.find(f=>pointInGeometry(point,f.geometry))||null;}
 async function revealState(college,roundIndex){
  await stateReady;
  if(highlightLayer){map.removeLayer(highlightLayer);highlightLayer=null;}
- const feature=stateFeatures.find(f=>String(f.properties.STATE).padStart(2,"0")===FIPS[college.state]);
- if(!feature)return "";
+ const targetFips=FIPS[college.state];
+ const feature=stateFeatures.find(f=>featureStateFips(f)===targetFips);
+ if(!feature){console.warn("Could not match state boundary",college.state,targetFips,stateFeatures.length,stateFeatures[0]?.properties);return "";}
  if(r!==roundIndex||!done)return "";
  const layer=L.geoJSON(feature,{interactive:false,style:{color:"#f2c75c",weight:4,opacity:0,fillColor:"#f2c75c",fillOpacity:0}}).addTo(map);
  highlightLayer=layer;
  const start=performance.now(),duration=1100;
  const fade=now=>{if(highlightLayer!==layer)return;const p=Math.min(1,(now-start)/duration),e=1-Math.pow(1-p,3);layer.setStyle({opacity:e,fillOpacity:.2*e});if(p<1)requestAnimationFrame(fade)};
- requestAnimationFrame(fade);layer.bringToFront();if(gameLayer)gameLayer.bringToFront();return feature.properties.NAME||"";
+ requestAnimationFrame(fade);if(gameLayer)gameLayer.bringToFront();layer.bringToFront();return feature.properties.NAME||college.state;
 }
 async function initMap(){
  if(map){requestAnimationFrame(()=>map.invalidateSize());return;}
@@ -153,7 +155,7 @@ async function initMap(){
   requestAnimationFrame(()=>map.invalidateSize());
   stateReady=(async()=>{
    const response=await fetch(STATE_URL,{cache:"force-cache"});if(!response.ok)throw new Error("U.S. state boundaries returned "+response.status);
-   const data=await response.json();stateFeatures=(data.features||[]).filter(f=>FIPS[Object.keys(FIPS).find(k=>FIPS[k]===String(f.properties.STATE).padStart(2,"0"))]);
+   const data=await response.json();stateFeatures=(data.features||[]).filter(f=>Object.values(FIPS).includes(featureStateFips(f)));
    if(stateFeatures.length<49)throw new Error("Incomplete U.S. state boundaries: "+stateFeatures.length);
    stateLayer=L.geoJSON(stateFeatures,{interactive:false,style:{color:"#ffffff",weight:1.25,opacity:.85,fillOpacity:0}}).addTo(map);
   })().catch(e=>{console.warn("State outlines unavailable; guesses still work",e);});
