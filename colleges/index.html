@@ -201,7 +201,7 @@ function show(total,results){
  window._shareText=date+"\n"+results.map(x=>x.b+(x.w??x.p)).join("\n")+"\n\nFinal score: "+total;window._shareUrl="https://pinnsylvania.win/colleges";window._share="pinnsylvania.win/colleges\n"+window._shareText;
  const tick=()=>{const now=new Date(),midnight=new Date(now);midnight.setHours(24,0,0,0);const seconds=Math.floor((midnight-now)/1000);$("cd").textContent="Next puzzle in "+Math.floor(seconds/3600)+"h "+Math.floor(seconds%3600/60)+"m"};tick();setInterval(tick,3e4);
 }
-$("share").onclick=async()=>{const btn=$("share");try{if(navigator.share){await navigator.share({title:"Your Campus Pins score",text:window._shareText,url:window._shareUrl});btn.textContent="Shared! ✓"}else if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(window._share);btn.textContent="Copied! ✓"}else prompt("Copy your score:",window._share)}catch(e){if(e?.name==="AbortError")return;try{await navigator.clipboard.writeText(window._share);btn.textContent="Copied! ✓"}catch(copyError){prompt("Copy your score:",window._share)}}};
+$("share").onclick=async()=>{const btn=$("share");try{if(navigator.share){await navigator.share({title:"Your Campus Pins score",text:window._share});btn.textContent="Shared! ✓"}else if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(window._share);btn.textContent="Copied! ✓"}else prompt("Copy your score:",window._share)}catch(e){if(e?.name==="AbortError")return;try{await navigator.clipboard.writeText(window._share);btn.textContent="Copied! ✓"}catch(copyError){prompt("Copy your score:",window._share)}}};
 </script>
 </body>
 </html>
