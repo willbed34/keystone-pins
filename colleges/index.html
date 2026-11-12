@@ -167,6 +167,7 @@ function round(){
  $("sc").textContent="Score: "+res.reduce((s,x)=>s+x.p,0);$("college").textContent=t.name;$("act").textContent="Drop a pin to continue";$("act").disabled=true;
 }
 $("go").onclick=async()=>{
+ if(restoreCompletedToday())return;
  $("go").disabled=true;$("go").textContent="Loading U.S. map…";$("land").classList.add("hide");$("game").classList.remove("hide");
  try{await initMap();round()}catch(e){console.error(e);$("game").classList.add("hide");$("land").classList.remove("hide");$("go").disabled=false;$("go").textContent="Try loading the map again"}
 };
@@ -198,10 +199,12 @@ function show(total,results){
  $("rows").innerHTML=puz.map((t,i)=>"<div class='row'><span>"+t.name+" <small class='tag'>("+["Very easy","Easy","Medium","Hard","Very hard"][i]+" "+MULT[i]+"×)</small></span><b>"+results[i].b+" "+(results[i].w??results[i].p)+"/100</b></div>").join("");
  loadDailyAverage();
  const date=new Date(ny+"T12:00:00-05:00").toLocaleDateString("en-US",{month:"long",day:"numeric",timeZone:"America/New_York"});
- window._shareText=date+"\n"+results.map(x=>x.b+(x.w??x.p)).join("\n")+"\n\nFinal score: "+total;window._shareUrl="https://pinnsylvania.win/colleges";window._share="pinnsylvania.win/colleges\n"+window._shareText;
+ window._shareText=date+"\n"+results.map(x=>x.b+(x.w??x.p)).join("\n")+"\n\nFinal score: "+total;window._shareUrl="https://pinnsylvania.win/colleges/";window._share="pinnsylvania.win/colleges/\n"+window._shareText;
  const tick=()=>{const now=new Date(),midnight=new Date(now);midnight.setHours(24,0,0,0);const seconds=Math.floor((midnight-now)/1000);$("cd").textContent="Next puzzle in "+Math.floor(seconds/3600)+"h "+Math.floor(seconds%3600/60)+"m"};tick();setInterval(tick,3e4);
 }
+function restoreCompletedToday(){try{const saved=JSON.parse(localStorage.getItem("ks-college")||"{}");if(saved.last===ny&&Array.isArray(saved.res)&&saved.res.length===5){S=saved;show(S.tot,S.res);$("go").disabled=true;return true;}}catch(e){}return false;}
 $("share").onclick=async()=>{const btn=$("share");try{if(navigator.share){await navigator.share({title:"Your Campus Pins score",text:window._share});btn.textContent="Shared! ✓"}else if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(window._share);btn.textContent="Copied! ✓"}else prompt("Copy your score:",window._share)}catch(e){if(e?.name==="AbortError")return;try{await navigator.clipboard.writeText(window._share);btn.textContent="Copied! ✓"}catch(copyError){prompt("Copy your score:",window._share)}}};
+restoreCompletedToday();
 </script>
 </body>
 </html>
