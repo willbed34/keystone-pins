@@ -49,7 +49,7 @@ button:disabled{opacity:.4;cursor:default}
 .big{font-size:2.6rem;font-weight:700;text-align:center;color:var(--gold);margin:0}
 .ff{font-size:.92rem;color:var(--mute);margin:2px 0 8px;line-height:1.35}
 .hide{display:none}
-@media(max-width:480px){main{padding:10px}.brand{margin:10px 0 17px}#map{height:58vh;min-height:340px}.map-action{left:9px;right:9px;bottom:9px;width:calc(100% - 18px);min-height:50px;padding:13px 14px}.card{padding:12px}}
+@media(max-width:480px){main{padding:10px}.brand{margin:10px 0 17px}#map{height:48vh;min-height:300px}.map-action{left:9px;right:9px;bottom:9px;width:calc(100% - 18px);min-height:50px;padding:13px 14px}.card{padding:12px}body.playing main{padding-top:5px}body.playing .brand{margin:0 0 7px;gap:0}body.playing .shore-mark,body.playing .eyebrow,body.playing .sub{display:none}body.playing h1{font-size:1.25rem;line-height:1.1}body.playing .hud{margin-bottom:5px}}
 </style>
 </head>
 <body>
@@ -288,7 +288,7 @@ function round(){
 $("go").onclick=async()=>{
   $("go").disabled=true;
   $("go").textContent="Loading your route…";
-  $("land").classList.add("hide");$("game").classList.remove("hide");
+  document.body.classList.add("playing");$("land").classList.add("hide");$("game").classList.remove("hide");
   try{await Promise.all([censusReady,initMap()]);round();}
   catch(e){$("game").classList.add("hide");$("land").classList.remove("hide");$("go").disabled=false;$("go").textContent="Try loading the map again";}
 };
