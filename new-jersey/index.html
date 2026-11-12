@@ -195,7 +195,7 @@ function countyForTown(town){
   const point={lat:town.lat,lng:town.lon};
   return countyFeatures.find(feature=>pointInGeometry(point,feature.geometry))||null;
 }
-async function revealCounty(town){
+async function revealCounty(town,roundIndex){
   if(countyLayer){map.removeLayer(countyLayer);countyLayer=null;}
   try{
     if(!countyFeatures){
@@ -206,6 +206,8 @@ async function revealCounty(town){
       if(!countyFeatures.length)throw new Error("No New Jersey county boundaries returned");
     }
   }catch(error){console.warn("County outlines unavailable:",error);countyFeatures=[];return "";}
+  // Do not let a slow county request from an earlier round overwrite the new round.
+  if(r!==roundIndex||!done)return "";
   const feature=countyForTown(town);
   if(!feature)return "";
   const layer=L.geoJSON(feature,{interactive:false,style:{color:"#ff765e",weight:4,opacity:0,fillColor:"#ff765e",fillOpacity:0}}).addTo(map);
@@ -293,18 +295,20 @@ $("go").onclick=async()=>{
 $("act").onclick=async()=>{
   if(done){r++;if(r<5)round();else finish();return;}
   if(!pin)return;
-  const t=puz[r],glat=pin.lat,glon=pin.lng,d=hav(glat,glon,t.lat,t.lon);
-  const raw=d<=5?100:Math.max(0,Math.round(100*(1-(d-5)/245))),pts=raw*MULT[r];
+  const roundIndex=r,t=puz[roundIndex],glat=pin.lat,glon=pin.lng,d=hav(glat,glon,t.lat,t.lon);
+  const multiplier=MULT[roundIndex],raw=d<=5?100:Math.max(0,Math.round(100*(1-(d-5)/245))),pts=raw*multiplier;
   res.push({p:pts,w:raw,d,b:BAND(d)});done=true;
-  // Update the action immediately; county geometry may take a moment to load.
-  $("act").textContent=r<4?"Next round →":"See results";
-  $("act").disabled=true;
+  // The guess is confirmed; keep Next/Results clickable while county geometry loads.
+  $("act").textContent=roundIndex<4?"Next round →":"See results";
+  $("act").disabled=false;
   L.polyline([pin,[t.lat,t.lon]],{color:"#fff",weight:2,dashArray:"5, 6",opacity:.95}).addTo(gameLayer);
   L.circleMarker([t.lat,t.lon],{radius:7,color:"#fff",weight:2,fillColor:"#2f8f4e",fillOpacity:1}).addTo(gameLayer);
-  const countyName=await revealCounty(t);
-  $("info").innerHTML="<b>"+BAND(d)+" "+Math.round(d)+" km off · +"+raw+"/100"+(MULT[r]>1?" (×"+MULT[r]+" = "+pts+" pts)":" pts")+"</b><br>"+(t.f||"New Jersey place; coordinates from the 2024 U.S. Census Gazetteer.")+(countyName?"<div class='county-note'>📍 "+countyName+" County highlighted on the map</div>":"");
+  $("info").innerHTML="<b>"+BAND(d)+" "+Math.round(d)+" km off · +"+raw+"/100"+(multiplier>1?" (×"+multiplier+" = "+pts+" pts)":" pts")+"</b><br>"+(t.f||"New Jersey place; coordinates from the 2024 U.S. Census Gazetteer.");
   $("sc").textContent="Score: "+res.reduce((s,x)=>s+x.p,0);
-  $("act").disabled=false;
+  const countyName=await revealCounty(t,roundIndex);
+  if(r===roundIndex&&done&&countyName){
+    $("info").innerHTML+="<div class='county-note'>📍 "+countyName+" County highlighted on the map</div>";
+  }
 };
 async function finish(){
   const tot=res.reduce((s,x)=>s+x.p,0);
