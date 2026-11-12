@@ -88,9 +88,9 @@ button:disabled{opacity:.4;cursor:default}
   <button id="share" style="margin-top:12px">Share your score</button>
   <p class="ff" id="cd" style="text-align:center;margin-top:10px"></p>
 </div>
-<nav class="state-games" aria-label="More state games" style="margin:18px auto 28px;text-align:center;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-width:600px">
-<a href="/new-jersey" style="padding:13px 8px;border:1px solid #d6a329;border-radius:10px;background:#173b70;color:#fff;text-decoration:none;font-weight:800">Garden State Guess <small style="display:block;font-size:11px;font-weight:500;opacity:.85">New Jersey</small></a>
-<a href="/new-york" style="padding:13px 8px;border:1px solid #d6a329;border-radius:10px;background:#173b70;color:#fff;text-decoration:none;font-weight:800">Empire State Pin <small style="display:block;font-size:11px;font-weight:500;opacity:.85">New York</small></a>
+<nav class="state-games" aria-label="More state games" style="margin:18px auto 28px;text-align:center;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-width:760px">
+<a href="/new-jersey" style="padding:12px 5px;border:1px solid #d6a329;border-radius:10px;background:#173b70;color:#fff;text-decoration:none;font-weight:800;font-size:.9rem">Garden State Guess <small style="display:block;font-size:10px;font-weight:500;opacity:.85">New Jersey</small></a>
+<a href="/new-york" style="padding:12px 5px;border:1px solid #d6a329;border-radius:10px;background:#173b70;color:#fff;text-decoration:none;font-weight:800;font-size:.9rem">New York State of Find <small style="display:block;font-size:10px;font-weight:500;opacity:.85">New York</small></a>
 </nav>
 </main>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
@@ -216,21 +216,32 @@ function countyForTown(town){
   const point={lat:town.lat,lng:town.lon};
   return countyFeatures.find(feature=>pointInGeometry(point,feature.geometry))||null;
 }
-function revealCounty(town){
+async function revealCounty(town,roundIndex){
   if(countyLayer){map.removeLayer(countyLayer);countyLayer=null;}
+  try{
+    if(!countyFeatures||!countyFeatures.length){
+      const response=await fetch(PA_COUNTIES_URL,{cache:"force-cache"});
+      if(!response.ok)throw new Error("County boundary service returned "+response.status);
+      const data=await response.json();
+      countyFeatures=data.features||[];
+      if(!countyFeatures.length)throw new Error("No Pennsylvania county boundaries returned");
+    }
+  }catch(error){console.warn("County outlines unavailable:",error);countyFeatures=[];return "";}
+  if(r!==roundIndex||!done)return "";
   const feature=countyForTown(town);
   if(!feature)return "";
-  countyLayer=L.geoJSON(feature,{interactive:false,style:{color:"#f2c75c",weight:4,opacity:0,fillColor:"#f2c75c",fillOpacity:0}}).addTo(map);
+  const layer=L.geoJSON(feature,{interactive:false,style:{color:"#f2c75c",weight:4,opacity:0,fillColor:"#f2c75c",fillOpacity:0}}).addTo(map);
+  countyLayer=layer;
   const fadeStart=performance.now(),fadeDuration=1100;
   const fade=now=>{
-    if(!countyLayer)return;
+    if(countyLayer!==layer)return;
     const progress=Math.min(1,(now-fadeStart)/fadeDuration);
     const eased=1-Math.pow(1-progress,3);
-    countyLayer.setStyle({opacity:eased,fillOpacity:.22*eased});
+    layer.setStyle({opacity:eased,fillOpacity:.22*eased});
     if(progress<1)requestAnimationFrame(fade);
   };
   requestAnimationFrame(fade);
-  countyLayer.bringToFront();
+  layer.bringToFront();
   if(gameLayer)gameLayer.bringToFront();
   if(paLayer)paLayer.bringToFront();
   return feature.properties?.NAME||feature.properties?.BASENAME||"";
@@ -316,20 +327,22 @@ $("go").onclick=async()=>{
   try{await censusReady;await initMap();round();}
   catch(e){$("game").classList.add("hide");$("land").classList.remove("hide");$("go").disabled=false;$("go").textContent="Try loading the map again";}
 };
-$("act").onclick=()=>{
+$("act").onclick=async()=>{
   if(done){r++;if(r<5)round();else finish();return;}
   if(!pin)return;
   const roundIndex=r,t=puz[roundIndex],glat=pin.lat,glon=pin.lng,d=hav(glat,glon,t.lat,t.lon);
   const multiplier=MULT[roundIndex],raw=d<=5?100:Math.max(0,Math.round(100*(1-(d-5)/245))),pts=raw*multiplier;
   res.push({p:pts,w:raw,d,b:BAND(d)});done=true;
-  // Reveal the next action immediately; county highlighting must never block progression.
   $("act").textContent=roundIndex<4?"Next round →":"See results";
   $("act").disabled=false;
   L.polyline([pin,[t.lat,t.lon]],{color:"#fff",weight:2,dashArray:"5, 6",opacity:.95}).addTo(gameLayer);
   L.circleMarker([t.lat,t.lon],{radius:7,color:"#fff",weight:2,fillColor:"#2f8f4e",fillOpacity:1}).addTo(gameLayer);
-  const countyName=revealCounty(t);
-  $("info").innerHTML="<b>"+BAND(d)+" "+Math.round(d)+" km off · +"+raw+"/100"+(multiplier>1?" (×"+multiplier+" = "+pts+" pts)":" pts")+"</b><br>"+(t.f||"Pennsylvania place; coordinates from the 2024 U.S. Census Gazetteer.")+(countyName?"<div class='county-note'>📍 "+countyName+" County highlighted on the map</div>":"");
+  $("info").innerHTML="<b>"+BAND(d)+" "+Math.round(d)+" km off · +"+raw+"/100"+(multiplier>1?" (×"+multiplier+" = "+pts+" pts)":" pts")+"</b><br>"+(t.f||"Pennsylvania place; coordinates from the 2024 U.S. Census Gazetteer.");
   $("sc").textContent="Score: "+res.reduce((s,x)=>s+x.p,0);
+  const countyName=await revealCounty(t,roundIndex);
+  if(r===roundIndex&&done&&countyName){
+    $("info").innerHTML+="<div class='county-note'>📍 "+countyName+" County highlighted on the map</div>";
+  }
 };
 async function finish(){
   const tot=res.reduce((s,x)=>s+x.p,0);
