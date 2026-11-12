@@ -419,7 +419,7 @@ function show(tot,rs){
   const tick=()=>{const now=new Date(),midnight=new Date(now);midnight.setHours(24,0,0,0);const seconds=Math.floor((midnight-now)/1000);$("cd").textContent="Next puzzle in "+Math.floor(seconds/3600)+"h "+Math.floor(seconds%3600/60)+"m"};
   tick();setInterval(tick,3e4);
 }
-$("share").onclick=async()=>{const btn=$("share");try{if(navigator.share){await navigator.share({title:"Your score",text:window._shareText,url:window._shareUrl});btn.textContent="Shared! ✓";}else if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(window._share);btn.textContent="Copied! ✓";}else{prompt("Copy your score:",window._share);}}catch(e){if(e?.name==="AbortError")return;try{await navigator.clipboard.writeText(window._share);btn.textContent="Copied! ✓";}catch(copyError){prompt("Copy your score:",window._share);}}};
+$("share").onclick=async()=>{const btn=$("share");try{if(navigator.share){await navigator.share({title:"Your score",text:window._share});btn.textContent="Shared! ✓";}else if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(window._share);btn.textContent="Copied! ✓";}else{prompt("Copy your score:",window._share);}}catch(e){if(e?.name==="AbortError")return;try{await navigator.clipboard.writeText(window._share);btn.textContent="Copied! ✓";}catch(copyError){prompt("Copy your score:",window._share);}}};
 censusReady.then(()=>{if(S.last===ny&&S.res)show(S.tot,S.res)});
 </script>
 </body>
