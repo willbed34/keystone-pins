@@ -3,24 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#173b70">
-<meta name="description" content="A daily New York map game. Drop pins on five Empire State towns and test how well you know the state.">
+<meta name="theme-color" content="#142d4e">
+<meta name="description" content="A daily New York map game. Drop pins across the Empire State in five rounds. Find your stop.">
 <link rel="canonical" href="https://pinnsylvania.win/new-york">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='5' y='5' width='54' height='54' rx='9' fill='%230b563f' stroke='%23f4c542' stroke-width='3'/%3E%3Cpath d='M22 13h20v38H22z' fill='%23252b2c'/%3E%3Cpath d='M27 15v34M37 15v34' stroke='white' stroke-width='2' stroke-dasharray='5 4'/%3E%3C/svg%3E">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Empire State Pin — Daily New York Map Game">
+<meta property="og:title" content="New York State of Find — Daily New York Map Game">
 <meta property="og:description" content="Drop pins across the Empire State in five daily rounds. How well do you know New York?">
 <meta property="og:url" content="https://pinnsylvania.win/new-york">
 <meta name="twitter:card" content="summary">
-<title>Empire State Pin — Daily New York Map Game</title>
+<title>New York State of Find — Daily New York Map Game</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
 <style>
-:root{--bg:#eef2f8;--card:#fff;--ink:#172b4d;--mute:#64748b;--navy:#0b563f;--gold:#f28c28;--ok:#2878bd;--bad:#c64c3b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171d1a;--card:#222b26;--ink:#f4f5ef;--mute:#b2bcb4;--navy:#6b9ad6;--gold:#f28c28;--ok:#69c58c;--bad:#ff9b76;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#171d1a;--card:#222b26;--ink:#f4f5ef;--mute:#b2bcb4;--navy:#2b8a62;--gold:#f4c542;--ok:#69c58c;--bad:#ff8b82;color-scheme:dark}
+:root{--bg:#f1f3f5;--card:#fff;--ink:#172b4d;--mute:#64748b;--navy:#142d4e;--gold:#f4c542;--ok:#4778a8;--bad:#d83a3a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121a26;--card:#1d2938;--ink:#f2f5f8;--mute:#aab6c5;--navy:#6e9ed6;--gold:#f4c542;--ok:#69b3e7;--bad:#ff8585;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#121a26;--card:#1d2938;--ink:#f2f5f8;--mute:#aab6c5;--navy:#6e9ed6;--gold:#f4c542;--ok:#69b3e7;--bad:#ff8585;color-scheme:dark}
 *{box-sizing:border-box}html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font-family:ui-rounded,'Avenir Next',system-ui,sans-serif;min-height:100%}
-.top-rule{height:9px;background:repeating-linear-gradient(90deg,#f4c542 0 34px,#0b563f 34px 68px,#fff 68px 102px)}
+.top-rule{height:9px;background:repeating-linear-gradient(90deg,#142d4e 0 34px,#f4c542 34px 68px,#fff 68px 102px)}
 main{max-width:760px;margin:0 auto;padding:14px}
 .brand{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;margin:14px 0 22px}
 .shore-mark{width:66px;height:66px;display:grid;place-items:center;flex:none;filter:drop-shadow(0 3px 3px #0003)}
@@ -28,21 +28,21 @@ main{max-width:760px;margin:0 auto;padding:14px}
 .eyebrow{font:800 .7rem system-ui,sans-serif;letter-spacing:2px;color:var(--navy);margin:0 0 4px}
 h1{font-size:clamp(2rem,5vw,2.45rem);margin:0;color:var(--navy);letter-spacing:.2px;line-height:1.08}
 .sub{color:var(--mute);font-weight:650;margin:5px 0 0;font-size:1.02rem;letter-spacing:.2px}
-.card{background:var(--card);border:1px solid #0b563f28;border-top:4px solid var(--navy);border-radius:10px;padding:14px;box-shadow:0 5px 18px #17251c12;margin-bottom:12px}
+.card{background:var(--card);border:1px solid #142d4e28;border-top:4px solid var(--navy);border-radius:10px;padding:14px;box-shadow:0 5px 18px #17251c12;margin-bottom:12px}
 button{font:inherit;font-weight:800;border:2px solid #f4c542;border-radius:7px;padding:12px 18px;background:var(--navy);color:#fff;cursor:pointer;width:100%;font-size:1rem;letter-spacing:.2px;transition:filter .15s,transform .15s}
 button:not(:disabled):hover{filter:brightness(1.12)}
 button:not(:disabled):active{transform:translateY(1px)}
 button:disabled{opacity:.4;cursor:default}
 .hud{display:flex;justify-content:space-between;gap:12px;font-family:system-ui,sans-serif;font-size:.9rem;color:var(--mute);margin-bottom:6px}
 .town{font-size:1.6rem;font-weight:800;text-align:center;margin:4px 0 8px;color:var(--navy);letter-spacing:.2px}
-#map{width:100%;height:min(66vh,560px);min-height:360px;border-radius:7px;overflow:hidden;background:#d9e0e5;z-index:1;border:3px solid #252b2c}
+#map{width:100%;height:min(66vh,560px);min-height:360px;border-radius:7px;overflow:hidden;background:#d9e0e5;z-index:1;border:3px solid #142d4e}
 .map-wrap{position:relative}
 .map-action{position:absolute;z-index:500;left:12px;right:12px;bottom:12px;width:calc(100% - 24px);box-shadow:0 3px 12px #07142688;border:1px solid #ffffff55;background:var(--navy);min-height:48px}
-.map-action:disabled{opacity:.9;background:#34483e;color:#e3eae4;border-color:#f4c542}
+.map-action:disabled{opacity:.9;background:#25364b;color:#f2f5f8;border-color:#f4c542}
 .county-note{font-weight:800;color:var(--navy);margin-top:6px}
 .leaflet-container{font-family:system-ui,sans-serif;touch-action:pan-x pan-y}
 .leaflet-control-attribution{font-size:10px!important}
-.leaflet-control-zoom a{color:#0b563f!important}
+.leaflet-control-zoom a{color:#142d4e!important}
 .map-help{font: .82rem system-ui,sans-serif;color:var(--mute);text-align:center;margin:8px 0 0}
 .fact{margin:10px 0;line-height:1.45}
 .row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #8883;font-family:system-ui,sans-serif;font-size:.95rem}.round-tag{font-size:.76em;font-weight:600;color:var(--mute);white-space:nowrap;margin-left:3px}
@@ -56,17 +56,17 @@ button:disabled{opacity:.4;cursor:default}
 <div class="top-rule" aria-hidden="true"></div>
 <main>
 <header class="brand">
-  <div class="shore-mark" aria-hidden="true"><svg viewBox="0 0 66 66"><rect x="4" y="4" width="58" height="58" rx="8" fill="#0b563f" stroke="#f4c542" stroke-width="3"/><path d="M21 12h24v42H21z" fill="#252b2c"/><path d="M26 14v38M40 14v38" stroke="#fff" stroke-width="2.5" stroke-dasharray="6 5"/><path d="M10 33h8M48 33h8" stroke="#f4c542" stroke-width="3" stroke-linecap="round"/></svg></div>
+  <div class="shore-mark" aria-hidden="true"><svg viewBox="0 0 66 66"><rect x="4" y="4" width="58" height="58" rx="8" fill="#142d4e" stroke="#f4c542" stroke-width="3"/><path d="M21 12h24v42H21z" fill="#142d4e"/><path d="M26 14v38M40 14v38" stroke="#fff" stroke-width="2.5" stroke-dasharray="6 5"/><path d="M10 33h8M48 33h8" stroke="#f4c542" stroke-width="3" stroke-linecap="round"/></svg></div>
   <div>
-    <p class="eyebrow">EMPIRE STATE · DAILY EXIT CHALLENGE</p>
-    <h1>Empire State Pin</h1>
-    <p class="sub">Five towns. One Empire State. Find your place.</p>
+    <p class="eyebrow">EMPIRE STATE · DAILY STOP CHALLENGE</p>
+    <h1>New York State of Find</h1>
+    <p class="sub">Five towns. One Empire State. Find your stop.</p>
   </div>
 </header>
 <div id="land" class="card">
   <p style="margin:0 0 4px"><b id="pn"></b></p>
-  <p class="ff">Your daily Empire State challenge: find 5 towns on the map. The closer your pins, the more points you earn — 1,000 possible. New towns every day.</p>
-  <button id="go">Start the challenge</button>
+  <p class="ff">Your daily New York trip: find 5 places across the state. The closer your pins, the more points you earn — 1,000 possible. A new route every day.</p>
+  <button id="go">Start your trip</button>
   <p class="ff" id="streakL" style="text-align:center;margin-top:10px"></p>
 </div>
 <div id="game" class="hide">
@@ -88,13 +88,9 @@ button:disabled{opacity:.4;cursor:default}
   <button id="share" style="margin-top:12px">Share your score</button>
   <p class="ff" id="cd" style="text-align:center;margin-top:10px"></p>
 </div>
-<nav class="state-games" aria-label="More state games" style="margin:18px auto 28px;text-align:center;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-width:600px">
-<a href="/" style="padding:13px 8px;border:1px solid #f4c542;border-radius:8px;background:#0b563f;color:#fff;text-decoration:none;font-weight:800">Pinnsylvania <small style="display:block;font-size:11px;font-weight:500;opacity:.85">Pennsylvania</small></a>
-<a href="/new-york" style="padding:13px 8px;border:1px solid #f4c542;border-radius:8px;background:#0b563f;color:#fff;text-decoration:none;font-weight:800">Empire State Pin <small style="display:block;font-size:11px;font-weight:500;opacity:.85">New York</small></a>
-</nav>
-<nav class="state-games" aria-label="More state games" style="margin:18px auto 28px;text-align:center;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-width:600px">
-<a href="/" style="padding:13px 8px;border:1px solid #f28c28;border-radius:8px;background:#173b70;color:#fff;text-decoration:none;font-weight:800">Pinnsylvania <small style="display:block;font-size:11px;font-weight:500;opacity:.85">Pennsylvania</small></a>
-<a href="/new-jersey" style="padding:13px 8px;border:1px solid #f28c28;border-radius:8px;background:#173b70;color:#fff;text-decoration:none;font-weight:800">Garden State Guess <small style="display:block;font-size:11px;font-weight:500;opacity:.85">New Jersey</small></a>
+<nav class="state-games" aria-label="More state games" style="margin:18px auto 28px;text-align:center;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-width:760px">
+<a href="/" style="padding:12px 5px;border:1px solid #f4c542;border-radius:8px;background:#142d4e;color:#fff;text-decoration:none;font-weight:800;font-size:.9rem">Pinnsylvania <small style="display:block;font-size:10px;font-weight:500;opacity:.85">Pennsylvania</small></a>
+<a href="/new-jersey" style="padding:12px 5px;border:1px solid #f4c542;border-radius:8px;background:#142d4e;color:#fff;text-decoration:none;font-weight:800;font-size:.9rem">Garden State Guess <small style="display:block;font-size:10px;font-weight:500;opacity:.85">New Jersey</small></a>
 </nav>
 </main>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
@@ -124,7 +120,7 @@ function puzzleForDay(dayNumber){
   };
   // Larger Census places are generally easier to recognize; small places make
   // progressively harder rounds. The seed keeps the daily set deterministic.
-  const veryEasy=new Set(["Newark","Jersey City","Trenton","Atlantic City","Princeton","Hoboken","Camden","New Brunswick"]);
+  const veryEasy=new Set(["New York City","New York","Buffalo","Rochester","Albany","Syracuse","Yonkers","Niagara Falls"]);
   const sorted=PZ.flat().slice().sort((a,b)=>(Number(veryEasy.has(b.n))-Number(veryEasy.has(a.n)))||(b.population-a.population)||(b.area-a.area));
   const tiers=Array.from({length:5},(_,i)=>{
     const start=Math.floor(i*sorted.length/5),end=Math.floor((i+1)*sorted.length/5);
@@ -141,7 +137,7 @@ const censusReady=(async()=>{
     // difficulty. Incorporated cities, boroughs, towns and municipalities stay.
     const populations=new Map();
     try{
-      const popResponse=await fetch("https://api.census.gov/data/2020/dec/pl?get=NAME%2CP1_001N&for=place%3A%2A&in=state%3A34",{cache:"force-cache"});
+      const popResponse=await fetch("https://api.census.gov/data/2020/dec/pl?get=NAME%2CP1_001N&for=place%3A%2A&in=state%3A36",{cache:"force-cache"});
       if(!popResponse.ok)throw new Error("2020 Census population API returned "+popResponse.status);
       const popRows=await popResponse.json();
       popRows.slice(1).forEach(row=>populations.set("36"+row[3],Number(row[1])||0));
@@ -159,7 +155,7 @@ const censusReady=(async()=>{
     const included=parsed.filter(t=>{
       const incorporated=["city","borough","town","township","village","municipality"].includes(t.type);
       return incorporated||(t.type==="cdp"&&t.population>=5000);
-    }).filter(t=>t.n&&Number.isFinite(t.lat)&&Number.isFinite(t.lon)&&t.lat>38.8&&t.lat<41.5&&t.lon>-75.6&&t.lon<-73.8);
+    }).filter(t=>t.n&&Number.isFinite(t.lat)&&Number.isFinite(t.lon)&&t.lat>40.3&&t.lat<45.2&&t.lon>-80.1&&t.lon<-71.7);
     const counts={};included.forEach(t=>counts[t.n]=(counts[t.n]||0)+1);
     const typeCounts={};included.forEach(t=>{const key=t.n+"|"+t.type;typeCounts[key]=(typeCounts[key]||0)+1});
     PZ=included.map(t=>{
@@ -181,7 +177,7 @@ let puz=puzzleForDay(num);
 const yesterdayPuzzle=puzzleForDay(num-1);
 let S={};try{S=JSON.parse(localStorage.getItem("ks-ny")||"{}")}catch(e){}
 const save=()=>{try{localStorage.setItem("ks-ny",JSON.stringify(S))}catch(e){}};
-$("pn").textContent="EMPIRE STATE · DAILY CHALLENGE #"+num+" · "+ny;
+$("pn").textContent="EMPIRE STATE · DAILY STOP #"+num+" · "+ny;
 $("streakL").textContent=S.streak?"🔥 "+S.streak+"-day streak":"";
 function hav(a,b,c,d){const rad=Math.PI/180,x=Math.sin((c-a)*rad/2)**2+Math.cos(a*rad)*Math.cos(c*rad)*Math.sin((d-b)*rad/2)**2;return 12742*Math.asin(Math.sqrt(x))}
 let r=0,pin=null,res=[],done=false,map=null,gameLayer=null,nyLayer=null,nyGeometry=null,mapReady=null,boundaryReady=null,countyLayer=null,countyFeatures=null;
@@ -224,7 +220,7 @@ async function revealCounty(town,roundIndex){
   if(r!==roundIndex||!done)return "";
   const feature=countyForTown(town);
   if(!feature)return "";
-  const layer=L.geoJSON(feature,{interactive:false,style:{color:"#ff765e",weight:4,opacity:0,fillColor:"#ff765e",fillOpacity:0}}).addTo(map);
+  const layer=L.geoJSON(feature,{interactive:false,style:{color:"#d83a3a",weight:4,opacity:0,fillColor:"#d83a3a",fillOpacity:0}}).addTo(map);
   countyLayer=layer;
   const fadeStart=performance.now(),fadeDuration=1100;
   const fade=now=>{
@@ -262,7 +258,7 @@ async function initMap(){
     }
     pin=e.latlng;
     gameLayer.clearLayers();
-    L.circleMarker(pin,{radius:6,color:"#fff",weight:2,fillColor:"#ff765e",fillOpacity:1}).addTo(gameLayer);
+    L.circleMarker(pin,{radius:6,color:"#fff",weight:2,fillColor:"#d83a3a",fillOpacity:1}).addTo(gameLayer);
     $("info").textContent="";
     $("act").disabled=false;
     $("act").textContent="Confirm guess";
@@ -301,7 +297,7 @@ function round(){
 }
 $("go").onclick=async()=>{
   $("go").disabled=true;
-  $("go").textContent="Loading your route…";
+  $("go").textContent="Loading your trip…";
   document.body.classList.add("playing");$("land").classList.add("hide");$("game").classList.remove("hide");
   try{await Promise.all([censusReady,initMap()]);round();}
   catch(e){$("game").classList.add("hide");$("land").classList.remove("hide");$("go").disabled=false;$("go").textContent="Try loading the map again";}
@@ -369,7 +365,7 @@ function show(tot,rs){
   const roundDifficulty=["Easy","Easy","Medium","Hard","Hard"];
   $("rows").innerHTML=puz.map((t,i)=>"<div class='row'><span>"+t.n+" <small class='round-tag'>("+roundDifficulty[i]+" "+MULT[i]+"×)</small></span><b>"+rs[i].b+" "+(rs[i].w??rs[i].p)+"/100</b></div><p class='ff'>"+(t.f||"New York place; coordinates from the 2024 U.S. Census Gazetteer.")+"</p>").join("");
   loadDailyAverage();
-  window._share="Empire State Pin #"+num+" — "+tot+"/1000 🔥 "+S.streak+"\n"+rs.map(x=>x.b+(x.w??x.p)).join(" · ")+"\nhttps://pinnsylvania.win/new-york";
+  window._share="New York State of Find #"+num+" — "+tot+"/1000 🔥 "+S.streak+"\n"+rs.map(x=>x.b+(x.w??x.p)).join(" · ")+"\nhttps://pinnsylvania.win/new-york";
   const tick=()=>{const now=new Date(),midnight=new Date(now);midnight.setHours(24,0,0,0);const seconds=Math.floor((midnight-now)/1000);$("cd").textContent="Next puzzle in "+Math.floor(seconds/3600)+"h "+Math.floor(seconds%3600/60)+"m"};
   tick();setInterval(tick,3e4);
 }
