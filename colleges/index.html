@@ -145,8 +145,9 @@ async function revealState(college,roundIndex){
   highlightLayer=layer;
   const start=performance.now(),duration=1100;
   const fade=now=>{if(highlightLayer!==layer)return;const p=Math.min(1,(now-start)/duration),e=1-Math.pow(1-p,3);layer.setStyle({opacity:e,fillOpacity:.24*e});if(p<1)requestAnimationFrame(fade)};
+  // The highlight is added after the guess markers, so Leaflet already
+  // renders it above them. Avoid bringToFront() on the GeoJSON group here.
   requestAnimationFrame(fade);
-  if(gameLayer)gameLayer.bringToFront();layer.bringToFront();
   return feature.properties?.NAME||college.state;
  }catch(error){console.warn("State highlight unavailable:",error);$("info").innerHTML+="<div class='state-note'>State outline couldn't load. Try again shortly.</div>";return "";}
 }
