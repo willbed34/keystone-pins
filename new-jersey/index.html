@@ -58,15 +58,15 @@ button:disabled{opacity:.4;cursor:default}
 <header class="brand">
   <div class="shore-mark" aria-hidden="true"><svg viewBox="0 0 66 66"><rect x="4" y="4" width="58" height="58" rx="8" fill="#0b563f" stroke="#f4c542" stroke-width="3"/><path d="M21 12h24v42H21z" fill="#252b2c"/><path d="M26 14v38M40 14v38" stroke="#fff" stroke-width="2.5" stroke-dasharray="6 5"/><path d="M10 33h8M48 33h8" stroke="#f4c542" stroke-width="3" stroke-linecap="round"/></svg></div>
   <div>
-    <p class="eyebrow">GARDEN STATE · DAILY EXIT CHALLENGE</p>
+
     <h1>Garden State Guess</h1>
-    <p class="sub">Five towns. One Garden State. Find your exit.</p>
+
   </div>
 </header>
 <div id="land" class="card">
   <p style="margin:0 0 4px"><b id="pn"></b></p>
-  <p class="ff">Your daily New Jersey road trip: find 5 towns on the map. The closer your pins, the more points you earn — 1,000 possible. New route every day.</p>
-  <button id="go">Start your trip</button>
+  <p class="ff">Click on the map where you think each New Jersey town is.</p>
+  <button id="go">Start Game</button>
   <p class="ff" id="streakL" style="text-align:center;margin-top:10px"></p>
 </div>
 <div id="game" class="hide">
@@ -77,7 +77,7 @@ button:disabled{opacity:.4;cursor:default}
       <div id="map" aria-label="Unlabeled aerial map of New Jersey"></div>
       <button id="act" class="map-action" disabled>Drop a pin to continue</button>
     </div>
-    <p class="map-help">Drop your pin anywhere inside the Garden State. Zoom and drag to scout your route.</p>
+    <p class="map-help">Click on the map where you think the town is.</p>
     <div id="info" class="fact"></div>
   </div>
 </div>
@@ -171,7 +171,7 @@ let puz=puzzleForDay(num);
 const yesterdayPuzzle=puzzleForDay(num-1);
 let S={};try{S=JSON.parse(localStorage.getItem("ks-nj")||"{}")}catch(e){}
 const save=()=>{try{localStorage.setItem("ks-nj",JSON.stringify(S))}catch(e){}};
-$("pn").textContent="GARDEN STATE · DAILY ROUTE #"+num+" · "+ny;
+$("pn").textContent="Puzzle #"+num+" · "+ny;
 $("streakL").textContent=S.streak?"🔥 "+S.streak+"-day streak":"";
 function hav(a,b,c,d){const rad=Math.PI/180,x=Math.sin((c-a)*rad/2)**2+Math.cos(a*rad)*Math.cos(c*rad)*Math.sin((d-b)*rad/2)**2;return 12742*Math.asin(Math.sqrt(x))}
 let r=0,pin=null,res=[],done=false,map=null,gameLayer=null,njLayer=null,njGeometry=null,mapReady=null,boundaryReady=null,countyLayer=null,countyFeatures=null;
