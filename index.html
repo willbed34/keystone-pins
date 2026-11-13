@@ -216,11 +216,11 @@ const save=()=>{try{localStorage.setItem("ks",JSON.stringify(S))}catch(e){}};
 $("pn").textContent="Puzzle #"+num+" · "+ny;
 $("streakL").textContent=S.streak?"🔥 "+S.streak+"-day streak":"";
 function hav(a,b,c,d){const rad=Math.PI/180,x=Math.sin((c-a)*rad/2)**2+Math.cos(a*rad)*Math.cos(c*rad)*Math.sin((d-b)*rad/2)**2;return 12742*Math.asin(Math.sqrt(x))}
-let r=0,pin=null,res=[],done=false,map=null,gameLayer=null,paLayer=null,paGeometry=null,mapReady=null,countyLayer=null,countyFeatures=[];
+let r=0,pin=null,res=[],done=false,map=null,gameLayer=null,paLayer=null,paGeometry=null,mapReady=null,countyLayer=null,countyFeatures=[],initialMapCenter=null,initialMapZoom=null;
 
 // The base layer is imagery only. Do NOT add a labels, roads, boundaries,
 // or "reference" overlay tile layer. The only linework added is PA's outline.
-const PA_BOUNDARY_URL="https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json";
+const PA_BOUNDARY_URL="https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/0/query?where=STATE%3D%2742%27&outFields=NAME,STATE,GEOID&returnGeometry=true&outSR=4326&f=geoJSON";
 const PA_COUNTIES_URL="https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/19/query?where=STATE%3D%2742%27&outFields=NAME%2CGEOID&returnGeometry=true&outSR=4326&f=geoJSON";
 
 function pointInRing(point,ring){
@@ -290,25 +290,16 @@ async function initMap(){
       const response=await fetch(PA_BOUNDARY_URL);
       if(!response.ok)throw new Error("Boundary service returned "+response.status);
       const allStates=await response.json();
-      const paFeature=allStates.features?.find(feature=>feature.properties?.name==="Pennsylvania");
+      const paFeature=allStates.features?.find(feature=>String(feature.properties?.STATE||"").padStart(2,"0")==="42"||feature.properties?.NAME==="Pennsylvania");
       if(!paFeature)throw new Error("Pennsylvania boundary was not found in the GeoJSON");
       paGeometry=paFeature.geometry;
       paLayer=L.geoJSON(paFeature,{
         interactive:false,
         style:{color:"#ffffff",weight:3,opacity:1,fill:false}
       }).addTo(map);
-      try{
-        const countyResponse=await fetch(PA_COUNTIES_URL);
-        if(!countyResponse.ok)throw new Error("County boundary service returned "+countyResponse.status);
-        const countyData=await countyResponse.json();
-        countyFeatures=countyData.features||[];
-        if(!countyFeatures.length)throw new Error("No Pennsylvania county boundaries returned");
-      }catch(countyError){
-        console.warn("County outlines unavailable:",countyError);
-        countyFeatures=[];
-      }
       const bounds=paLayer.getBounds();
-      map.fitBounds(bounds,{padding:[12,12]});
+      map.fitBounds(bounds,{padding:[12,12],animate:false});
+      initialMapCenter=map.getCenter();initialMapZoom=map.getZoom();
       map.setMaxBounds(bounds.pad(0.18));
       map.on("click",e=>{
         if(done)return;
@@ -337,6 +328,10 @@ function resetMapView(){
   if(!map||!paLayer)return;
   map.invalidateSize({pan:false});
   map.fitBounds(paLayer.getBounds(),{padding:[12,12],animate:false});
+}
+function zoomBackToStart(roundIndex){
+  if(!map||r!==roundIndex||!done||!initialMapCenter||initialMapZoom==null)return;
+  map.flyTo(initialMapCenter,initialMapZoom,{animate:true,duration:2.2,easeLinearity:0.25});
 }
 function round(){
   const t=puz[r];pin=null;done=false;gameLayer.clearLayers();$("info").textContent="";
@@ -369,6 +364,7 @@ $("act").onclick=async()=>{
   if(r===roundIndex&&done&&countyName){
     $("info").innerHTML+="<div class='county-note'>📍 "+countyName+" County highlighted on the map</div>";
   }
+  zoomBackToStart(roundIndex);
 };
 async function finish(){
   const tot=res.reduce((s,x)=>s+x.p,0);
