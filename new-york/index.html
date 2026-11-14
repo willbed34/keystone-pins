@@ -146,12 +146,21 @@ function pickFromTier(tier,dayNumber,tierIndex){
   return order[offset];
 }
 function puzzleForDay(dayNumber){
-  // Keep the easiest tier smaller, but never let it fall below 20 places.
-  const veryEasy=new Set(["New York City","New York","Buffalo","Rochester","Albany","Syracuse","Yonkers","Niagara Falls"]);
-  const sorted=PZ.flat().slice().sort((a,b)=>(Number(veryEasy.has(b.n))-Number(veryEasy.has(a.n)))||((b.population||0)-(a.population||0))||((b.area||0)-(a.area||0)));
-  const easyCount=Math.min(sorted.length,Math.max(20,Math.ceil(sorted.length*0.1)));
-  const remaining=sorted.slice(easyCount);
-  const tiers=[sorted.slice(0,easyCount),...Array.from({length:4},(_,i)=>{
+  // Deduplicate Census/fallback entries by normalized place name before tiering.
+  const unique=new Map();
+  PZ.flat().forEach(place=>{
+    const key=String(place.n||"").normalize("NFKC").trim().toLocaleLowerCase("en-US");
+    if(key&&!unique.has(key))unique.set(key,place);
+  });
+  const places=[...unique.values()];
+  // The very-easy round is a fixed, curated set of recognizable places,
+  // not an arbitrary percentage of the much larger Census database.
+  const easyNames=new Set(["New York City","Buffalo","Rochester","Albany","Syracuse","Yonkers","Niagara Falls","Binghamton","Ithaca","Saratoga Springs","Poughkeepsie","Utica","Schenectady","White Plains","New Rochelle","Mount Vernon","Troy","Elmira","Watertown","Kingston"]);
+  const easy=places.filter(place=>easyNames.has(place.n));
+  const remaining=places.filter(place=>!easyNames.has(place.n))
+    .sort((a,b)=>(Number(b.population||0)-Number(a.population||0))||
+      (Number(b.area||0)-Number(a.area||0))||a.n.localeCompare(b.n));
+  const tiers=[easy,...Array.from({length:4},(_,i)=>{
     const start=Math.floor(i*remaining.length/4),end=Math.floor((i+1)*remaining.length/4);
     return remaining.slice(start,end);
   })].filter(tier=>tier.length);
