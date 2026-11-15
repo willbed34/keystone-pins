@@ -146,7 +146,7 @@ function puzzleForDay(dayNumber){
   // Deduplicate Census/fallback entries by normalized place name before tiering.
   const unique=new Map();
   PZ.flat().forEach(place=>{
-    const key=String(place.n||"").normalize("NFKC").trim().toLocaleLowerCase("en-US");
+    const key=String(place.n||"").replace(/\s+\((?:city|borough|town|township|village|municipality|CDP)\)$/i,"").replace(/\s+·\s+[A-Z0-9]+$/i,"").normalize("NFKC").trim().toLocaleLowerCase("en-US");
     if(key&&!unique.has(key))unique.set(key,place);
   });
   const places=[...unique.values()];
