@@ -100,11 +100,24 @@ function shuffledTier(tier,cycle,index){
  const random=()=>{seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;return(seed>>>0)/4294967296};
  const a=tier.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;
 }
-function pickFromTier(tier,day,index){
+function pickFromTierBase(tier,day,index){
  const cycle=Math.floor((day-1)/tier.length),offset=(day-1)%tier.length;
  const order=shuffledTier(tier,cycle,index);
  if(cycle>0&&order.length>1){const prev=shuffledTier(tier,cycle-1,index);if(order[0].name===prev[prev.length-1].name)[order[0],order[1]]=[order[1],order[0]];}
  return order[offset];
+}
+function pickFromTier(tier,day,index){
+ const base=pickFromTierBase(tier,day,index);
+ if(!base||day<=1||tier.length<=7)return base;
+ const key=x=>String(x?.name||"").normalize("NFKC").trim().toLocaleLowerCase("en-US");
+ const recent=new Set();
+ for(let back=1;back<=Math.min(7,day-1);back++)recent.add(key(pickFromTierBase(tier,day-back,index)));
+ if(!recent.has(key(base)))return base;
+ const cycle=Math.floor((day-1)/tier.length),offset=(day-1)%tier.length;
+ const order=shuffledTier(tier,cycle,index);
+ if(cycle>0&&order.length>1){const prev=shuffledTier(tier,cycle-1,index);if(order[0].name===prev[prev.length-1].name)[order[0],order[1]]=[order[1],order[0]];}
+ for(let step=1;step<tier.length;step++){const candidate=order[(offset+step)%tier.length];if(!recent.has(key(candidate)))return candidate;}
+ return base;
 }
 let puz=[];
 async function loadCollegeCorpus(){if(TIERS.length)return;const response=await fetch("/colleges/colleges.json",{cache:"force-cache"});if(!response.ok)throw new Error("College list failed to load: "+response.status);const data=await response.json();if(!Array.isArray(data)||data.length!==5||data.reduce((n,t)=>n+(Array.isArray(t)?t.length:0),0)!==1000)throw new Error("College list is incomplete");TIERS=data;puz=TIERS.map((tier,i)=>pickFromTier(tier,num,i));}
