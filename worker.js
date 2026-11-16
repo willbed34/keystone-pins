@@ -20,7 +20,7 @@ export default {
       if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(day || "") || !Number.isInteger(score) || score < 0 || score > 1000) return json({error:"Invalid percentile request"},400);
       const row = await env.DB.prepare("SELECT COUNT(*) AS total, SUM(CASE WHEN score >= ? THEN 1 ELSE 0 END) AS at_or_above FROM daily_scores WHERE day = ? AND player_id LIKE ?").bind(score,day,game+"-%").first();
       const total = Number(row.total || 0);
-      const topPercent = total ? Math.max(1,Math.ceil(Number(row.at_or_above || 0)/total*100)) : null;
+      const topPercent = total < 5 ? 50 : Math.max(1,Math.ceil(Number(row.at_or_above || 0)/total*100));
       return json({day,topPercent});
     }
     if (url.pathname === "/api/score" && request.method === "POST") {
