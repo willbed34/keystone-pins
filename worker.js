@@ -13,6 +13,16 @@ export default {
       const row = await env.DB.prepare("SELECT COUNT(*) AS count, COALESCE(AVG(score), 0) AS average FROM daily_scores WHERE day = ? AND player_id LIKE ?").bind(day, game + "-%").first();
       return json({day,count:row.count,average:Math.round(row.average*100)/100});
     }
+    if (url.pathname === "/api/daily-percentile" && request.method === "GET") {
+      const day = url.searchParams.get("day");
+      const score = Number(url.searchParams.get("score"));
+      const game = ["pa","nj","ny","college"].includes(url.searchParams.get("game")) ? url.searchParams.get("game") : "pa";
+      if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(day || "") || !Number.isInteger(score) || score < 0 || score > 1000) return json({error:"Invalid percentile request"},400);
+      const row = await env.DB.prepare("SELECT COUNT(*) AS total, SUM(CASE WHEN score >= ? THEN 1 ELSE 0 END) AS at_or_above FROM daily_scores WHERE day = ? AND player_id LIKE ?").bind(score,day,game+"-%").first();
+      const total = Number(row.total || 0);
+      const topPercent = total ? Math.max(1,Math.ceil(Number(row.at_or_above || 0)/total*100)) : null;
+      return json({day,topPercent});
+    }
     if (url.pathname === "/api/score" && request.method === "POST") {
       let body;
       try { body = await request.json(); } catch { return json({error:"Invalid JSON"},400); }
