@@ -237,7 +237,7 @@ async function loadDailyAverage(score){
   }
 }
 async function submitDailyScore(score){
- try{const response=await fetch("/api/score",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({day:ny,score,playerId:"college-"+getPlayerId()})});if(!response.ok)throw new Error("Score endpoint "+response.status);await loadDailyAverage()}catch(e){$("dailyAvg").textContent="Daily average will appear when the score service is available."}
+ try{const response=await fetch("/api/score",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({day:ny,score,playerId:"college-"+getPlayerId()})});if(!response.ok)throw new Error("Score endpoint "+response.status);await loadDailyAverage(score)}catch(e){$("dailyAvg").textContent="Today's percentile is unavailable right now."}
 }
 function show(total,results){
  $("land").classList.add("hide");$("game").classList.add("hide");$("recap").classList.remove("hide");$("tot").textContent=total+" / 1000";$("strk").textContent="🔥 "+S.streak+"-day streak";
