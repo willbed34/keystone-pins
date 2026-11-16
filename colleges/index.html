@@ -107,17 +107,21 @@ function pickFromTierBase(tier,day,index){
  return order[offset];
 }
 function pickFromTier(tier,day,index){
- const base=pickFromTierBase(tier,day,index);
- if(!base||day<=1||tier.length<=7)return base;
+ if(!tier.length)return null;
  const key=x=>String(x?.name||"").normalize("NFKC").trim().toLocaleLowerCase("en-US");
- const recent=new Set();
- for(let back=1;back<=Math.min(7,day-1);back++)recent.add(key(pickFromTierBase(tier,day-back,index)));
- if(!recent.has(key(base)))return base;
- const cycle=Math.floor((day-1)/tier.length),offset=(day-1)%tier.length;
- const order=shuffledTier(tier,cycle,index);
- if(cycle>0&&order.length>1){const prev=shuffledTier(tier,cycle-1,index);if(order[0].name===prev[prev.length-1].name)[order[0],order[1]]=[order[1],order[0]];}
- for(let step=1;step<tier.length;step++){const candidate=order[(offset+step)%tier.length];if(!recent.has(key(candidate)))return candidate;}
- return base;
+ let chosen=null,history=[];
+ for(let d=1;d<=day;d++){
+  const cycle=Math.floor((d-1)/tier.length),offset=(d-1)%tier.length;
+  const order=shuffledTier(tier,cycle,index);
+  if(cycle>0&&order.length>1){const prev=shuffledTier(tier,cycle-1,index);if(key(order[0])===key(prev[prev.length-1]))[order[0],order[1]]=[order[1],order[0]];}
+  const recent=new Set(history.slice(-7));
+  let candidate=order[offset];
+  if(recent.has(key(candidate))){
+   for(let step=1;step<tier.length;step++){const next=order[(offset+step)%tier.length];if(!recent.has(key(next))){candidate=next;break;}}
+  }
+  chosen=candidate;history.push(key(chosen));
+ }
+ return chosen;
 }
 let puz=[];
 async function loadCollegeCorpus(){if(TIERS.length)return;const response=await fetch("/colleges/colleges.json",{cache:"force-cache"});if(!response.ok)throw new Error("College list failed to load: "+response.status);const data=await response.json();if(!Array.isArray(data)||data.length!==5||data.reduce((n,t)=>n+(Array.isArray(t)?t.length:0),0)!==1000)throw new Error("College list is incomplete");TIERS=data;puz=TIERS.map((tier,i)=>pickFromTier(tier,num,i));}
