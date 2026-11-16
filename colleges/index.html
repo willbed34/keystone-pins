@@ -230,7 +230,7 @@ async function loadDailyAverage(score){
     const response=await fetch("/api/daily-percentile?game=college&day="+encodeURIComponent(ny)+"&score="+encodeURIComponent(score),{cache:"no-store"});
     if(!response.ok)throw new Error("Percentile endpoint returned "+response.status);
     const data=await response.json();
-    $("dailyAvg").textContent=data.topPercent!=null?"You placed in the top "+data.topPercent+"% today.":"Today's percentile is unavailable until scores are recorded.";
+    $("dailyAvg").textContent="You placed in the top "+(data.topPercent??50)+"% today.";
   }catch(error){
     $("dailyAvg").textContent="Today's percentile is unavailable right now.";
     console.warn("Could not load daily percentile:",error);
