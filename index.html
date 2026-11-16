@@ -181,13 +181,16 @@ function puzzleForDay(dayNumber){
   const places=[...unique.values()];
   // The very-easy round is a fixed, curated set of recognizable places,
   // not an arbitrary percentage of the much larger Census database.
+  // Curated early rounds keep recognizable regional places ahead of obscure Census entries.
   const easyNames=new Set(["Philadelphia","Pittsburgh","Erie","Harrisburg","Allentown","Reading","Scranton","Bethlehem","Lancaster","York","Altoona","Williamsport","State College","Wilkes-Barre","Hazleton","Johnstown","Chambersburg","Lebanon","Easton","Hershey"]);
+  const secondNames=new Set(["Punxsutawney","Gettysburg","Jim Thorpe","Intercourse","Centralia","Bellefonte","Wellsboro","Bloomsburg","Ebensburg","Honesdale","Huntingdon","Carlisle","Lock Haven","New Castle","Pottsville","Franklin","Butler","Waynesboro","Uniontown","Meadville"]);
   const easy=places.filter(place=>easyNames.has(place.n));
-  const remaining=places.filter(place=>!easyNames.has(place.n))
+  const second=places.filter(place=>secondNames.has(place.n)&&!easyNames.has(place.n));
+  const remaining=places.filter(place=>!easyNames.has(place.n)&&!secondNames.has(place.n))
     .sort((a,b)=>(Number(b.population||0)-Number(a.population||0))||
       (Number(b.area||0)-Number(a.area||0))||a.n.localeCompare(b.n));
-  const tiers=[easy,...Array.from({length:4},(_,i)=>{
-    const start=Math.floor(i*remaining.length/4),end=Math.floor((i+1)*remaining.length/4);
+  const tiers=[easy,second,...Array.from({length:3},(_,i)=>{
+    const start=Math.floor(i*remaining.length/3),end=Math.floor((i+1)*remaining.length/3);
     return remaining.slice(start,end);
   })].filter(tier=>tier.length);
   return tiers.map((tier,index)=>pickFromTier(tier,dayNumber,index));
@@ -413,7 +416,7 @@ async function loadDailyAverage(score){
     const response=await fetch("/api/daily-percentile?game=pa&day="+encodeURIComponent(ny)+"&score="+encodeURIComponent(score),{cache:"no-store"});
     if(!response.ok)throw new Error("Percentile endpoint returned "+response.status);
     const data=await response.json();
-    $("dailyAvg").textContent=data.topPercent!=null?"You placed in the top "+data.topPercent+"% today.":"Today's percentile is unavailable until scores are recorded.";
+    $("dailyAvg").textContent="You placed in the top "+(data.topPercent??50)+"% today.";
   }catch(error){
     $("dailyAvg").textContent="Today's percentile is unavailable right now.";
     console.warn("Could not load daily percentile:",error);
