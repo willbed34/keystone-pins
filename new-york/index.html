@@ -85,7 +85,7 @@ button:disabled{opacity:.4;cursor:default}
 <div id="recap" class="card hide">
   <p class="big" id="tot"></p><p class="sub" style="text-align:center" id="strk"></p>
   <div id="rows"></div>
-  <p class="ff" id="dailyAvg" style="text-align:center;font-weight:700;margin-top:12px">Today's average: loading…</p>
+  <p class="ff" id="dailyAvg" style="text-align:center;font-weight:700;margin-top:12px">Today's percentile appears here after you play</p>
   <button id="share" style="margin-top:12px">Share your score</button>
   <p class="ff" id="cd" style="text-align:center;margin-top:10px"></p>
 </div>
@@ -396,24 +396,23 @@ function getPlayerId(){
   if(!S.playerId){S.playerId=(crypto.randomUUID?crypto.randomUUID():("p"+Date.now()+Math.random().toString(36).slice(2)));save();}
   return S.playerId;
 }
-async function loadDailyAverage(){
+async function loadDailyAverage(score){
   try{
-    const response=await fetch("/api/daily-average?game=ny&day="+encodeURIComponent(ny),{cache:"no-store"});
-    if(!response.ok)throw new Error("Average endpoint returned "+response.status);
+    if(!Number.isFinite(Number(score)))return;
+    const response=await fetch("/api/daily-percentile?game=ny&day="+encodeURIComponent(ny)+"&score="+encodeURIComponent(score),{cache:"no-store"});
+    if(!response.ok)throw new Error("Percentile endpoint returned "+response.status);
     const data=await response.json();
-    $("dailyAvg").textContent=data.count
-      ?"Today's average: "+Math.round(data.average)+" / 1000 ("+data.count+" "+(data.count===1?"player":"players")+")"
-      :"Today's average: be the first to play!";
+    $("dailyAvg").textContent=data.topPercent!=null?"You placed in the top "+data.topPercent+"% today.":"Today's percentile is unavailable until scores are recorded.";
   }catch(error){
-    $("dailyAvg").textContent="Today's average unavailable right now.";
-    console.warn("Could not load daily average:",error);
+    $("dailyAvg").textContent="Today's percentile is unavailable right now.";
+    console.warn("Could not load daily percentile:",error);
   }
 }
 async function submitDailyScore(score){
   try{
     const response=await fetch("/api/score",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({day:ny,score,playerId:"ny-"+getPlayerId()})});
     if(!response.ok)throw new Error("Score endpoint returned "+response.status);
-    await loadDailyAverage();
+    await loadDailyAverage(score);
   }catch(error){
     $("dailyAvg").textContent="Daily average will appear when the score service is available.";
     console.warn("Could not submit daily score:",error);
@@ -424,7 +423,7 @@ function show(tot,rs){
   $("tot").textContent=tot+" / 1000";$("strk").textContent="🔥 "+S.streak+"-day streak";
   const roundDifficulty=["Easy","Easy","Medium","Hard","Hard"];
   $("rows").innerHTML=puz.map((t,i)=>"<div class='row'><span>"+t.n+" <small class='round-tag'>("+roundDifficulty[i]+" "+MULT[i]+"×)</small></span><b>"+rs[i].b+" "+(rs[i].w??rs[i].p)+"/100</b></div><p class='ff'>"+(t.f||"New York place; coordinates from the 2024 U.S. Census Gazetteer.")+"</p>").join("");
-  loadDailyAverage();
+  loadDailyAverage(S.tot);
   window._shareText=new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",timeZone:"America/New_York"})+"\n"+rs.map(x=>x.b+(x.w??x.p)).join("\n")+"\n\nFinal score: "+tot;window._shareUrl="https://pinnsylvania.win/new-york/";window._share="pinnsylvania.win/new-york/\n"+window._shareText;
   const tick=()=>{const now=new Date(),midnight=new Date(now);midnight.setHours(24,0,0,0);const seconds=Math.floor((midnight-now)/1000);$("cd").textContent="Next puzzle in "+Math.floor(seconds/3600)+"h "+Math.floor(seconds%3600/60)+"m"};
   tick();setInterval(tick,3e4);
