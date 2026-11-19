@@ -164,6 +164,46 @@ function pickFromTier(tier,dayNumber,tierIndex){
   }
   return chosen;
 }
+function pickPuzzleWithCooldown(tiers,dayNumber){
+  const key=x=>String(x?.n||"").replace(/\s+\((?:city|borough|town|township|village|municipality|CDP)\)$/i,"").normalize("NFKC").trim().toLocaleLowerCase("en-US");
+  const history=[];
+  let chosen=[];
+  const rounds=tiers.length;
+  for(let day=1;day<=dayNumber;day++){
+    chosen=[];
+    const recent=new Set(history.slice(-7*rounds));
+    for(let index=0;index<rounds;index++){
+      const tier=tiers[index]||[];
+      if(!tier.length){chosen.push(null);continue;}
+      const cycle=Math.floor((day-1)/tier.length);
+      const offset=(day-1)%tier.length;
+      const order=shuffledTier(tier,cycle,index);
+      if(cycle>0&&order.length>1){
+        const previous=shuffledTier(tier,cycle-1,index);
+        if(key(order[0])===key(previous[previous.length-1]))[order[0],order[1]]=[order[1],order[0]];
+      }
+      const blocked=new Set(recent);
+      chosen.forEach(place=>{if(place)blocked.add(key(place));});
+      let candidate=null;
+      for(let step=0;step<order.length;step++){
+        const next=order[(offset+step)%order.length];
+        if(!blocked.has(key(next))){candidate=next;break;}
+      }
+      // If a tier has fewer places than the cooldown window, use the least-recently
+      // scheduled candidate rather than repeating the same one unnecessarily.
+      if(!candidate){
+        let oldest=Infinity;
+        for(const place of order){
+          const k=key(place),last=history.lastIndexOf(k);
+          if(last<oldest){oldest=last;candidate=place;}
+        }
+      }
+      chosen.push(candidate);
+    }
+    chosen.forEach(place=>{if(place)history.push(key(place));});
+  }
+  return chosen;
+}
 function puzzleForDay(dayNumber){
   // Deduplicate Census/fallback entries by normalized place name before tiering.
   const unique=new Map();
@@ -186,7 +226,7 @@ function puzzleForDay(dayNumber){
     const start=Math.floor(i*remaining.length/3),end=Math.floor((i+1)*remaining.length/3);
     return remaining.slice(start,end);
   })].filter(tier=>tier.length);
-  return tiers.map((tier,index)=>pickFromTier(tier,dayNumber,index));
+  return pickPuzzleWithCooldown(tiers,dayNumber);
 }
 const censusReady=(async()=>{
   try{
