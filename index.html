@@ -244,7 +244,7 @@ function puzzleForDay(dayNumber){
   // Level 1 is reserved for places with broad statewide or national name recognition.
   const easyNames=new Set(["Philadelphia","Pittsburgh","Erie","Harrisburg","Allentown","Reading","Scranton","Bethlehem","Lancaster","York","Altoona","Williamsport","State College","Wilkes-Barre","Hazleton","Johnstown","Chambersburg","Lebanon","Easton","Hershey","Gettysburg","Punxsutawney","Jim Thorpe","Intercourse","Centralia"]);
   const easy=places.filter(place=>easyNames.has(canonicalPlaceName(place.n)));
-  const remaining=places.filter(place=>!easyNames.has(place.n))
+  const remaining=places.filter(place=>!easyNames.has(canonicalPlaceName(place.n)))
     .sort((a,b)=>(Number(b.population||0)-Number(a.population||0))||
       (Number(b.area||0)-Number(a.area||0))||a.n.localeCompare(b.n));
   // Level 2 is the 20 largest remaining communities, rather than a random
