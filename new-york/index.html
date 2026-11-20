@@ -165,37 +165,51 @@ function pickFromTier(tier,dayNumber,tierIndex){
   return chosen;
 }
 function pickPuzzleWithCooldown(tiers,dayNumber){
-  const key=x=>String(x?.n||"").replace(/\s+\((?:city|borough|town|township|village|municipality|CDP)\)$/i,"").normalize("NFKC").trim().toLocaleLowerCase("en-US");
+  const key=x=>String(x?.n||"").replace(/\s+·\s+[A-Z0-9]+$/i,"").replace(/\s+\((?:city|borough|town|township|village|municipality|CDP)\)$/i,"").replace(/\s+/g," ").normalize("NFKC").trim().toLocaleLowerCase("en-US");
+  const rounds=tiers.length;
   const history=[];
   let chosen=[];
-  const rounds=tiers.length;
   for(let day=1;day<=dayNumber;day++){
     chosen=[];
+    // Block every answer from the previous seven days, across all tiers.
     const recent=new Set(history.slice(-7*rounds));
     for(let index=0;index<rounds;index++){
       const tier=tiers[index]||[];
       if(!tier.length){chosen.push(null);continue;}
-      const cycle=Math.floor((day-1)/tier.length);
-      const offset=(day-1)%tier.length;
+      const cycle=Math.floor((day-1)/Math.max(1,tier.length));
+      const offset=(day-1)%Math.max(1,tier.length);
       const order=shuffledTier(tier,cycle,index);
-      if(cycle>0&&order.length>1){
-        const previous=shuffledTier(tier,cycle-1,index);
-        if(key(order[0])===key(previous[previous.length-1]))[order[0],order[1]]=[order[1],order[0]];
-      }
       const blocked=new Set(recent);
       chosen.forEach(place=>{if(place)blocked.add(key(place));});
       let candidate=null;
+      // Prefer the intended tier and its normal deterministic order.
       for(let step=0;step<order.length;step++){
         const next=order[(offset+step)%order.length];
         if(!blocked.has(key(next))){candidate=next;break;}
       }
-      // If a tier has fewer places than the cooldown window, use the least-recently
-      // scheduled candidate rather than repeating the same one unnecessarily.
+      // If a tier is exhausted, borrow from the nearest tier rather than
+      // recycling a recently used place while other places remain available.
+      if(!candidate){
+        const neighbors=tiers.map((items,tierIndex)=>({items,tierIndex,distance:Math.abs(tierIndex-index)}))
+          .filter(item=>item.tierIndex!==index&&item.items?.length)
+          .sort((a,b)=>a.distance-b.distance||a.tierIndex-b.tierIndex);
+        for(const neighbor of neighbors){
+          const fallbackOrder=shuffledTier(neighbor.items,cycle,neighbor.tierIndex);
+          for(let step=0;step<fallbackOrder.length;step++){
+            const next=fallbackOrder[(offset+step)%fallbackOrder.length];
+            if(!blocked.has(key(next))){candidate=next;break;}
+          }
+          if(candidate)break;
+        }
+      }
+      // Last resort only applies if the entire pool is smaller than the cooldown.
       if(!candidate){
         let oldest=Infinity;
-        for(const place of order){
+        for(const place of tiers.flat()){
           const k=key(place),last=history.lastIndexOf(k);
-          if(last<oldest){oldest=last;candidate=place;}
+          if(last<oldest&&!chosen.some(item=>item&&key(item)===k)){
+            oldest=last;candidate=place;
+          }
         }
       }
       chosen.push(candidate);
@@ -203,6 +217,11 @@ function pickPuzzleWithCooldown(tiers,dayNumber){
     chosen.forEach(place=>{if(place)history.push(key(place));});
   }
   return chosen;
+}
+function canonicalPlaceName(value){
+  return String(value||"").replace(/\s+·\s+[A-Z0-9]+$/i,"")
+    .replace(/\s+\((?:city|borough|town|township|village|municipality|CDP)\)$/i,"")
+    .replace(/\s+/g," ").normalize("NFKC").trim();
 }
 function puzzleForDay(dayNumber){
   // Deduplicate Census/fallback entries by normalized place name before tiering.
@@ -217,9 +236,9 @@ function puzzleForDay(dayNumber){
   // Curated early rounds keep recognizable regional places ahead of obscure Census entries.
   const easyNames=new Set(["New York City","Buffalo","Rochester","Albany","Syracuse","Yonkers","Niagara Falls","Binghamton","Ithaca","Saratoga Springs","Poughkeepsie","Utica","Schenectady","White Plains","New Rochelle","Mount Vernon","Troy","Elmira","Watertown","Kingston"]);
   const secondNames=new Set(["Lake Placid","Cooperstown","Plattsburgh","Beacon","Hudson","Montauk","Corning","Oswego","Riverhead","Glens Falls","Auburn","Geneva","Jamestown","Lockport","Newburgh","Peekskill","Olean","Oneonta","Cortland","Canandaigua"]);
-  const easy=places.filter(place=>easyNames.has(place.n));
-  const second=places.filter(place=>secondNames.has(place.n)&&!easyNames.has(place.n));
-  const remaining=places.filter(place=>!easyNames.has(place.n)&&!secondNames.has(place.n))
+  const easy=places.filter(place=>easyNames.has(canonicalPlaceName(place.n)));
+  const second=places.filter(place=>secondNames.has(canonicalPlaceName(place.n))&&!easyNames.has(canonicalPlaceName(place.n)));
+  const remaining=places.filter(place=>!easyNames.has(canonicalPlaceName(place.n))&&!secondNames.has(canonicalPlaceName(place.n)))
     .sort((a,b)=>(Number(b.population||0)-Number(a.population||0))||
       (Number(b.area||0)-Number(a.area||0))||a.n.localeCompare(b.n));
   const tiers=[easy,second,...Array.from({length:3},(_,i)=>{
