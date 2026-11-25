@@ -97,6 +97,9 @@ For Cloudflare Git deployments, set the deploy command to `npx wrangler deploy` 
 - Recognizable places (including Allentown, Erie, and Hershey) are explicitly placed in the easiest difficulty tier; remaining towns are ordered by 2020 population as a rough familiarity proxy.
 - The original hand-written facts are preserved. Other places receive a basic geographic fact generated from Census land/water area; those generic facts are not individually researched trivia.
 
+- The daily picker tracks the full pool across all five rounds. It does not reuse a location until the current pool cycle is exhausted, and it also protects the previous seven days; if a difficulty tier runs out, it borrows from the nearest tier.
+- Run `node scripts/audit-puzzle-picker.js` to syntax-check the game scripts and regression-test same-day duplicates, the seven-day cooldown, and full-pool rotation.
+
 ## Before public launch
 
 - Confirm the D1 database name in `wrangler.toml`, apply the migration, and verify the two API endpoints after deployment.
