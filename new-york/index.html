@@ -166,53 +166,71 @@ function pickFromTier(tier,dayNumber,tierIndex){
 }
 function pickPuzzleWithCooldown(tiers,dayNumber){
   const key=x=>String(x?.n||"").replace(/\s+·\s+[A-Z0-9]+$/i,"").replace(/\s+\((?:city|borough|town|township|village|municipality|CDP)\)$/i,"").replace(/\s+/g," ").normalize("NFKC").trim().toLocaleLowerCase("en-US");
-  const rounds=tiers.length;
+  const rounds=5;
+  const all=[...new Map(tiers.flat().filter(Boolean).map(place=>[key(place),place])).values()];
+  const cycleUsed=new Set();
   const history=[];
   let chosen=[];
   for(let day=1;day<=dayNumber;day++){
     chosen=[];
-    // Block every answer from the previous seven days, across all tiers.
+    const dayKeys=new Set();
     const recent=new Set(history.slice(-7*rounds));
     for(let index=0;index<rounds;index++){
       const tier=tiers[index]||[];
-      if(!tier.length){chosen.push(null);continue;}
       const cycle=Math.floor((day-1)/Math.max(1,tier.length));
       const offset=(day-1)%Math.max(1,tier.length);
-      const order=shuffledTier(tier,cycle,index);
-      const blocked=new Set(recent);
-      chosen.forEach(place=>{if(place)blocked.add(key(place));});
-      let candidate=null;
-      // Prefer the intended tier and its normal deterministic order.
-      for(let step=0;step<order.length;step++){
-        const next=order[(offset+step)%order.length];
-        if(!blocked.has(key(next))){candidate=next;break;}
-      }
-      // If a tier is exhausted, borrow from the nearest tier rather than
-      // recycling a recently used place while other places remain available.
+      const blocked=new Set([...cycleUsed,...recent,...dayKeys]);
+      const pickFrom=(items,seedIndex)=>{
+        if(!items?.length)return null;
+        const order=shuffledTier(items,cycle,seedIndex);
+        for(let step=0;step<order.length;step++){
+          const candidate=order[(offset+step)%order.length];
+          if(!blocked.has(key(candidate)))return candidate;
+        }
+        return null;
+      };
+      let candidate=pickFrom(tier,index);
       if(!candidate){
+        // Keep the intended tier whenever possible; otherwise borrow from
+        // the nearest tier instead of recycling a place from the current cycle.
         const neighbors=tiers.map((items,tierIndex)=>({items,tierIndex,distance:Math.abs(tierIndex-index)}))
           .filter(item=>item.tierIndex!==index&&item.items?.length)
           .sort((a,b)=>a.distance-b.distance||a.tierIndex-b.tierIndex);
         for(const neighbor of neighbors){
-          const fallbackOrder=shuffledTier(neighbor.items,cycle,neighbor.tierIndex);
-          for(let step=0;step<fallbackOrder.length;step++){
-            const next=fallbackOrder[(offset+step)%fallbackOrder.length];
-            if(!blocked.has(key(next))){candidate=next;break;}
-          }
+          candidate=pickFrom(neighbor.items,neighbor.tierIndex);
           if(candidate)break;
         }
       }
-      // Last resort only applies if the entire pool is smaller than the cooldown.
       if(!candidate){
-        let oldest=Infinity;
-        for(const place of tiers.flat()){
-          const k=key(place),last=history.lastIndexOf(k);
-          if(last<oldest&&!chosen.some(item=>item&&key(item)===k)){
-            oldest=last;candidate=place;
+        // Every location has now appeared in this full-pool cycle.
+        // Start a fresh cycle, but retain the seven-day safety window.
+        cycleUsed.clear();
+        blocked.clear();
+        recent.forEach(k=>blocked.add(k));
+        dayKeys.forEach(k=>blocked.add(k));
+        candidate=pickFrom(tier,index);
+        if(!candidate){
+          const neighbors=tiers.map((items,tierIndex)=>({items,tierIndex,distance:Math.abs(tierIndex-index)}))
+            .filter(item=>item.tierIndex!==index&&item.items?.length)
+            .sort((a,b)=>a.distance-b.distance||a.tierIndex-b.tierIndex);
+          for(const neighbor of neighbors){
+            candidate=pickFrom(neighbor.items,neighbor.tierIndex);
+            if(candidate)break;
           }
         }
       }
-      chosen.push(candidate);
+      // A small/offline pool may be smaller than seven days of answers.
+      // In that exceptional case, choose its oldest non-duplicate option.
+      if(!candidate){
+        candidate=all.find(place=>!dayKeys.has(key(place))&&
+          !chosen.some(item=>item&&key(item)===key(place)));
+      }
+      if(candidate){
+        chosen.push(candidate);
+        const k=key(candidate);
+        dayKeys.add(k);
+        cycleUsed.add(k);
+      }else chosen.push(null);
     }
     chosen.forEach(place=>{if(place)history.push(key(place));});
   }
@@ -404,9 +422,12 @@ function resetMapView(){
   map.invalidateSize({pan:false});
   map.fitBounds(nyLayer.getBounds(),{padding:[12,12],animate:false});
 }
-function zoomBackToStart(roundIndex){
-  if(!map||r!==roundIndex||!done||!initialMapCenter||initialMapZoom==null)return;
-  map.flyTo(initialMapCenter,initialMapZoom,{animate:true,duration:2.2,easeLinearity:0.25});
+function zoomToGuessAndAnswer(roundIndex,target){
+  if(!map||r!==roundIndex||!done||!pin||!target)return;
+  const answer=L.latLng(target.lat,target.lon);
+  const bounds=L.latLngBounds(pin,answer);
+  const maxZoom=Math.max(map.getMinZoom(),map.getZoom()-0.5);
+  map.flyToBounds(bounds,{padding:[64,64],maxZoom,duration:1.4,easeLinearity:0.25});
 }
 function round(){
   const t=puz[r];pin=null;done=false;gameLayer.clearLayers();$("info").textContent="";
@@ -440,7 +461,7 @@ $("act").onclick=async()=>{
   if(r===roundIndex&&done&&countyName){
     $("info").innerHTML+="<div class='county-note'>📍 "+countyName+" County highlighted on the map</div>";
   }
-  zoomBackToStart(roundIndex);
+  zoomToGuessAndAnswer(roundIndex,t);
 };
 async function finish(){
   const tot=res.reduce((s,x)=>s+x.p,0);
