@@ -314,7 +314,7 @@ const save=()=>{try{localStorage.setItem("ks-ny",JSON.stringify(S))}catch(e){}};
 $("pn").textContent="Puzzle #"+num+" · "+ny;
 $("streakL").textContent=S.streak?"🔥 "+S.streak+"-day streak":"";
 function hav(a,b,c,d){const rad=Math.PI/180,x=Math.sin((c-a)*rad/2)**2+Math.cos(a*rad)*Math.cos(c*rad)*Math.sin((d-b)*rad/2)**2;return 12742*Math.asin(Math.sqrt(x))}
-let r=0,pin=null,res=[],done=false,map=null,gameLayer=null,nyLayer=null,nyGeometry=null,mapReady=null,boundaryReady=null,countyLayer=null,countyFeatures=null,initialMapCenter=null,initialMapZoom=null;
+let r=0,pin=null,res=[],done=false,map=null,gameLayer=null,nyLayer=null,nyGeometry=null,mapReady=null,boundaryReady=null,countyLayer=null,countyFeatures=null;
 
 // Imagery-only basemap with a separate New York outline; no road-label overlays.
 const STATE_BOUNDARY_URL="https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/0/query?where=STATE%3D%2736%27&outFields=NAME%2CGEOID&returnGeometry=true&outSR=4326&f=geoJSON";
@@ -409,7 +409,7 @@ async function initMap(){
     nyLayer=L.geoJSON(nyFeature,{interactive:false,style:{color:"#ffffff",weight:3,opacity:1,fill:false}}).addTo(map);
     const bounds=nyLayer.getBounds();
     map.fitBounds(bounds,{padding:[12,12],animate:false});
-    initialMapCenter=map.getCenter();initialMapZoom=map.getZoom();
+    
     map.setMaxBounds(bounds.pad(0.18));
   })().catch(error=>{
     console.warn("New York outline unavailable:",error);
