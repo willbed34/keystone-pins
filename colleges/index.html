@@ -124,54 +124,49 @@ function pickFromTier(tier,day,index){
  return chosen;
 }
 function pickPuzzleWithCooldown(tiers,dayNumber){
-  const key=x=>String(x?.name||"").replace(/\s+/g," ").normalize("NFKC").trim().toLocaleLowerCase("en-US");
-  const rounds=tiers.length;
-  const history=[];
+  const key=x=>(String(x?.name||"").replace(/\s+/g," ").normalize("NFKC").trim().toLocaleLowerCase("en-US")+"|"+String(x?.state||"").trim().toUpperCase());
+  const rounds=5;
+  const all=[...new Map(tiers.flat().filter(Boolean).map(place=>[key(place),place])).values()];
+  const cycleUsed=new Set(),history=[];
   let chosen=[];
   for(let day=1;day<=dayNumber;day++){
     chosen=[];
-    // Block every answer from the previous seven days, across all tiers.
-    const recent=new Set(history.slice(-7*rounds));
+    const dayKeys=new Set(),recent=new Set(history.slice(-7*rounds));
     for(let index=0;index<rounds;index++){
       const tier=tiers[index]||[];
-      if(!tier.length){chosen.push(null);continue;}
       const cycle=Math.floor((day-1)/Math.max(1,tier.length));
       const offset=(day-1)%Math.max(1,tier.length);
-      const order=shuffledTier(tier,cycle,index);
-      const blocked=new Set(recent);
-      chosen.forEach(place=>{if(place)blocked.add(key(place));});
-      let candidate=null;
-      // Prefer the intended tier and its normal deterministic order.
-      for(let step=0;step<order.length;step++){
-        const next=order[(offset+step)%order.length];
-        if(!blocked.has(key(next))){candidate=next;break;}
-      }
-      // If a tier is exhausted, borrow from the nearest tier rather than
-      // recycling a recently used place while other places remain available.
+      const blocked=new Set([...cycleUsed,...recent,...dayKeys]);
+      const pickFrom=(items,seedIndex)=>{
+        if(!items?.length)return null;
+        const order=shuffledTier(items,cycle,seedIndex);
+        for(let step=0;step<order.length;step++){
+          const candidate=order[(offset+step)%order.length];
+          if(!blocked.has(key(candidate)))return candidate;
+        }
+        return null;
+      };
+      let candidate=pickFrom(tier,index);
       if(!candidate){
         const neighbors=tiers.map((items,tierIndex)=>({items,tierIndex,distance:Math.abs(tierIndex-index)}))
           .filter(item=>item.tierIndex!==index&&item.items?.length)
           .sort((a,b)=>a.distance-b.distance||a.tierIndex-b.tierIndex);
-        for(const neighbor of neighbors){
-          const fallbackOrder=shuffledTier(neighbor.items,cycle,neighbor.tierIndex);
-          for(let step=0;step<fallbackOrder.length;step++){
-            const next=fallbackOrder[(offset+step)%fallbackOrder.length];
-            if(!blocked.has(key(next))){candidate=next;break;}
-          }
-          if(candidate)break;
-        }
+        for(const neighbor of neighbors){candidate=pickFrom(neighbor.items,neighbor.tierIndex);if(candidate)break;}
       }
-      // Last resort only applies if the entire pool is smaller than the cooldown.
       if(!candidate){
-        let oldest=Infinity;
-        for(const place of tiers.flat()){
-          const k=key(place),last=history.lastIndexOf(k);
-          if(last<oldest&&!chosen.some(item=>item&&key(item)===k)){
-            oldest=last;candidate=place;
-          }
+        cycleUsed.clear();blocked.clear();
+        recent.forEach(k=>blocked.add(k));dayKeys.forEach(k=>blocked.add(k));
+        candidate=pickFrom(tier,index);
+        if(!candidate){
+          const neighbors=tiers.map((items,tierIndex)=>({items,tierIndex,distance:Math.abs(tierIndex-index)}))
+            .filter(item=>item.tierIndex!==index&&item.items?.length)
+            .sort((a,b)=>a.distance-b.distance||a.tierIndex-b.tierIndex);
+          for(const neighbor of neighbors){candidate=pickFrom(neighbor.items,neighbor.tierIndex);if(candidate)break;}
         }
       }
-      chosen.push(candidate);
+      if(!candidate)candidate=all.find(place=>!dayKeys.has(key(place)));
+      if(candidate){chosen.push(candidate);const k=key(candidate);dayKeys.add(k);cycleUsed.add(k);}
+      else chosen.push(null);
     }
     chosen.forEach(place=>{if(place)history.push(key(place));});
   }
@@ -179,7 +174,13 @@ function pickPuzzleWithCooldown(tiers,dayNumber){
 }
 
 let puz=[];
-async function loadCollegeCorpus(){if(TIERS.length)return;const response=await fetch("/colleges/colleges.json",{cache:"force-cache"});if(!response.ok)throw new Error("College list failed to load: "+response.status);const data=await response.json();if(!Array.isArray(data)||data.length!==5||data.reduce((n,t)=>n+(Array.isArray(t)?t.length:0),0)!==1000)throw new Error("College list is incomplete");TIERS=data;puz=pickPuzzleWithCooldown(TIERS,num);}
+async function loadCollegeCorpus(){if(TIERS.length)return;const response=await fetch("/colleges/colleges.json",{cache:"force-cache"});if(!response.ok)throw new Error("College list failed to load: "+response.status);const data=await response.json();if(!Array.isArray(data)||data.length!==5||data.reduce((n,t)=>n+(Array.isArray(t)?t.length:0),0)!==1000)throw new Error("College list is incomplete");const seenCampuses=new Set();
+  TIERS=data.map(tier=>tier.filter(campus=>{
+    const campusKey=String(campus.name||"").trim().toLocaleLowerCase("en-US")+"|"+String(campus.state||"").trim().toUpperCase();
+    if(seenCampuses.has(campusKey))return false;
+    seenCampuses.add(campusKey);return true;
+  }));
+  puz=pickPuzzleWithCooldown(TIERS,num);}
 let S={};try{S=JSON.parse(localStorage.getItem("ks-college")||"{}")}catch(e){}
 const save=()=>{try{localStorage.setItem("ks-college",JSON.stringify(S))}catch(e){}};
 $("pn").textContent="Puzzle #"+num+" · "+ny;
@@ -248,9 +249,12 @@ async function initMap(){
  return mapReady;
 }
 function resetMap(){if(!map)return;map.invalidateSize({pan:false});map.setView([39.5,-98.35],4,{animate:false});}
-function zoomBackToStart(roundIndex){
- if(!map||r!==roundIndex||!done||!initialMapCenter||initialMapZoom==null)return;
- map.flyTo(initialMapCenter,initialMapZoom,{animate:true,duration:2.2,easeLinearity:0.25});
+function zoomToGuessAndAnswer(roundIndex,target){
+ if(!map||r!==roundIndex||!done||!pin||!target)return;
+ const answer=L.latLng(target.lat,target.lon);
+ const bounds=L.latLngBounds(pin,answer);
+ const maxZoom=Math.max(map.getMinZoom(),map.getZoom()-0.5);
+ map.flyToBounds(bounds,{padding:[64,64],maxZoom,duration:1.4,easeLinearity:0.25});
 }
 function round(){
  const t=puz[r];pin=null;done=false;gameLayer.clearLayers();$("info").textContent="";
@@ -271,7 +275,7 @@ $("act").onclick=async()=>{
  $("info").innerHTML="<b>"+BAND(d)+" "+Math.round(d)+" km off · +"+raw+"/100"+(MULT[i]>1?" (×"+MULT[i]+" = "+pts+" pts)":" pts")+"</b><br>Correct campus: "+t.city+", "+t.state+".";
  $("sc").textContent="Score: "+res.reduce((s,x)=>s+x.p,0);
  const stateName=await revealState(t,i);if(r===i&&done&&stateName)$("info").innerHTML+="<div class='state-note'>"+stateName+" highlighted on the map</div>";
- zoomBackToStart(i);
+ zoomToGuessAndAnswer(i,t);
 };
 async function finish(){
  const total=res.reduce((s,x)=>s+x.p,0);
