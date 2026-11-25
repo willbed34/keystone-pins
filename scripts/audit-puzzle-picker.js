@@ -69,7 +69,7 @@ function assertSchedule(label, schedule, poolSize, key) {
 
 for (const page of pages) {
   const source = fs.readFileSync(pathUtil.join(root, page.path), "utf8");
-  const inlineScript = source.match(/<script>([\\s\\S]*?)<\\/script>/);
+  const inlineScript = source.match(/<script>([\s\S]*?)<\/script>/);
   if (!inlineScript) throw new Error(`${page.path}: missing inline script`);
   new vm.Script(inlineScript[1], { filename: page.path });
   if (!source.includes("map.flyToBounds(bounds")) throw new Error(`${page.path}: answer-fit zoom missing`);
