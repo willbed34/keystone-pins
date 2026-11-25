@@ -324,7 +324,7 @@ const save=()=>{try{localStorage.setItem("ks",JSON.stringify(S))}catch(e){}};
 $("pn").textContent="Puzzle #"+num+" · "+ny;
 $("streakL").textContent=S.streak?"🔥 "+S.streak+"-day streak":"";
 function hav(a,b,c,d){const rad=Math.PI/180,x=Math.sin((c-a)*rad/2)**2+Math.cos(a*rad)*Math.cos(c*rad)*Math.sin((d-b)*rad/2)**2;return 12742*Math.asin(Math.sqrt(x))}
-let r=0,pin=null,res=[],done=false,map=null,gameLayer=null,paLayer=null,paGeometry=null,mapReady=null,countyLayer=null,countyFeatures=[],initialMapCenter=null,initialMapZoom=null;
+let r=0,pin=null,res=[],done=false,map=null,gameLayer=null,paLayer=null,paGeometry=null,mapReady=null,countyLayer=null,countyFeatures=[];
 
 // The base layer is imagery only. Do NOT add a labels, roads, boundaries,
 // or "reference" overlay tile layer. The only linework added is PA's outline.
@@ -407,7 +407,7 @@ async function initMap(){
       }).addTo(map);
       const bounds=paLayer.getBounds();
       map.fitBounds(bounds,{padding:[12,12],animate:false});
-      initialMapCenter=map.getCenter();initialMapZoom=map.getZoom();
+      
       map.setMaxBounds(bounds.pad(0.18));
       map.on("click",e=>{
         if(done)return;
