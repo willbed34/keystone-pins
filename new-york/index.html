@@ -136,71 +136,32 @@ function pickPuzzleWithCooldown(tiers,dayNumber){
   const key=x=>String(x?.n||"").replace(/\s+·\s+[A-Z0-9]+$/i,"").replace(/\s+\((?:city|borough|town|township|village|municipality|CDP)\)$/i,"").replace(/\s+/g," ").normalize("NFKC").trim().toLocaleLowerCase("en-US");
   const rounds=5;
   const all=[...new Map(tiers.flat().filter(Boolean).map(place=>[key(place),place])).values()];
-  const cycleUsed=new Set();
-  const history=[];
+  const lastUsedDay=new Map();
   let chosen=[];
   for(let day=1;day<=dayNumber;day++){
     chosen=[];
     const dayKeys=new Set();
-    const recent=new Set(history.slice(-7*rounds));
+    const pickFrom=(items,seedIndex)=>{
+      if(!items?.length)return null;
+      const order=shuffledTier(items,day,seedIndex),offset=(day-1)%order.length;
+      for(let step=0;step<order.length;step++){
+        const candidate=order[(offset+step)%order.length],k=key(candidate),last=lastUsedDay.get(k);
+        if(!dayKeys.has(k)&&(last===undefined||day-last>14))return candidate;
+      }
+      return null;
+    };
     for(let index=0;index<rounds;index++){
-      const tier=tiers[index]||[];
-      const cycle=Math.floor((day-1)/Math.max(1,tier.length));
-      const offset=(day-1)%Math.max(1,tier.length);
-      const blocked=new Set([...cycleUsed,...recent,...dayKeys]);
-      const pickFrom=(items,seedIndex)=>{
-        if(!items?.length)return null;
-        const order=shuffledTier(items,cycle,seedIndex);
-        for(let step=0;step<order.length;step++){
-          const candidate=order[(offset+step)%order.length];
-          if(!blocked.has(key(candidate)))return candidate;
-        }
-        return null;
-      };
-      let candidate=pickFrom(tier,index);
+      let candidate=pickFrom(tiers[index]||[],index);
       if(!candidate){
-        // Keep the intended tier whenever possible; otherwise borrow from
-        // the nearest tier instead of recycling a place from the current cycle.
         const neighbors=tiers.map((items,tierIndex)=>({items,tierIndex,distance:Math.abs(tierIndex-index)}))
           .filter(item=>item.tierIndex!==index&&item.items?.length)
           .sort((a,b)=>a.distance-b.distance||a.tierIndex-b.tierIndex);
-        for(const neighbor of neighbors){
-          candidate=pickFrom(neighbor.items,neighbor.tierIndex);
-          if(candidate)break;
-        }
+        for(const neighbor of neighbors){candidate=pickFrom(neighbor.items,neighbor.tierIndex);if(candidate)break;}
       }
-      if(!candidate){
-        // Every location has now appeared in this full-pool cycle.
-        // Start a fresh cycle, but retain the seven-day safety window.
-        cycleUsed.clear();
-        blocked.clear();
-        recent.forEach(k=>blocked.add(k));
-        dayKeys.forEach(k=>blocked.add(k));
-        candidate=pickFrom(tier,index);
-        if(!candidate){
-          const neighbors=tiers.map((items,tierIndex)=>({items,tierIndex,distance:Math.abs(tierIndex-index)}))
-            .filter(item=>item.tierIndex!==index&&item.items?.length)
-            .sort((a,b)=>a.distance-b.distance||a.tierIndex-b.tierIndex);
-          for(const neighbor of neighbors){
-            candidate=pickFrom(neighbor.items,neighbor.tierIndex);
-            if(candidate)break;
-          }
-        }
-      }
-      // A small/offline pool may be smaller than seven days of answers.
-      // In that exceptional case, choose its oldest non-duplicate option.
-      if(!candidate){
-        candidate=all.find(place=>!dayKeys.has(key(place))&&
-          !chosen.some(item=>item&&key(item)===key(place)));
-      }
-      if(candidate){
-        chosen.push(candidate);
-        const k=key(candidate);
-        dayKeys.add(k);
-        cycleUsed.add(k);
-      }else chosen.push(null);
+      if(!candidate)candidate=pickFrom(all,rounds+index);
+      if(candidate){const k=key(candidate);dayKeys.add(k);lastUsedDay.set(k,day);chosen.push(candidate);}
+      else chosen.push(null);
     }
-    chosen.forEach(place=>{if(place)history.push(key(place));});
   }
   return chosen;
 }
